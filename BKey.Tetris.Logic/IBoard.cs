@@ -1,12 +1,14 @@
-﻿namespace BKey.Tetris.Logic;
+﻿using BKey.Tetris.Logic.Tetrimino;
+
+namespace BKey.Tetris.Logic;
 public interface IBoard
 {
     int Width { get; }
     int Height { get; }
     int[,] Grid { get; }
-    Tetrimino? CurrentTetrimino { get; set; }
-    bool IsCollision(Tetrimino tetrimino);
-    void PlaceTetrimino(Tetrimino tetrimino);
+    TetriminoPiece? CurrentTetrimino { get; set; }
+    bool IsCollision(TetriminoPiece tetrimino);
+    void PlaceTetrimino(TetriminoPiece tetrimino);
     void ClearLines();
 }
 

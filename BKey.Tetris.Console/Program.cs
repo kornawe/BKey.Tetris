@@ -1,4 +1,6 @@
 ﻿using BKey.Tetris.Logic;
+using BKey.Tetris.Logic.Game;
+using BKey.Tetris.Logic.Tetrimino;
 using System;
 
 namespace BKey.Tetris.Console;
@@ -11,7 +13,7 @@ internal class Program
         IBoard board = new Board(10, 20);
         IDisplay display = new ConsoleDisplay(board);
         ITetriminoFactory factory = new TetriminoFactory(random);
-        Game game = new Game(board, display, factory);
+        GameController game = new GameController(board, display, factory);
         game.Run();
     }
 }

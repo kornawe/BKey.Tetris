@@ -1,14 +1,14 @@
 ﻿using System;
 
-namespace BKey.Tetris.Logic;
-public class Tetrimino
+namespace BKey.Tetris.Logic.Tetrimino;
+public class TetriminoPiece
 {
     public int[,] Shape { get; private set; }
     public int X { get; set; }
     public int Y { get; set; }
     public ConsoleColor Color { get; set; } // Add color property
 
-    public Tetrimino(int[,] shape, ConsoleColor color)
+    public TetriminoPiece(int[,] shape, ConsoleColor color)
     {
         Shape = shape;
         X = 0;

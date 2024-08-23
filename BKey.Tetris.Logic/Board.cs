@@ -1,4 +1,6 @@
-﻿namespace BKey.Tetris.Logic;
+﻿using BKey.Tetris.Logic.Tetrimino;
+
+namespace BKey.Tetris.Logic;
 public class Board : IBoard
 {
     public int[,] Grid { get; }
@@ -6,7 +8,7 @@ public class Board : IBoard
     public int Width { get; }
     public int Height { get; }
 
-    public Tetrimino? CurrentTetrimino { get; set; }
+    public TetriminoPiece? CurrentTetrimino { get; set; }
 
     public Board(int width, int height)
     {
@@ -15,7 +17,7 @@ public class Board : IBoard
         Grid = new int[height, width];
     }
 
-    public bool IsCollision(Tetrimino tetrimino)
+    public bool IsCollision(TetriminoPiece tetrimino)
     {
         for (int i = 0; i < tetrimino.Shape.GetLength(0); i++)
         {
@@ -36,7 +38,7 @@ public class Board : IBoard
         return false;
     }
 
-    public void PlaceTetrimino(Tetrimino tetrimino)
+    public void PlaceTetrimino(TetriminoPiece tetrimino)
     {
         for (int i = 0; i < tetrimino.Shape.GetLength(0); i++)
         {

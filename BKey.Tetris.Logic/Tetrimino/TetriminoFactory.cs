@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BKey.Tetris.Logic;
+namespace BKey.Tetris.Logic.Tetrimino;
 public class TetriminoFactory : ITetriminoFactory
 {
     private Random random;
@@ -16,12 +16,12 @@ public class TetriminoFactory : ITetriminoFactory
         this.random = random;
     }
 
-    public Tetrimino Create(TetriminoType type)
+    public TetriminoPiece Create(TetriminoType type)
     {
         switch (type)
         {
             case TetriminoType.I:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 1, 1, 1, 1 }
@@ -30,7 +30,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.O:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 1, 1 },
@@ -40,7 +40,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.T:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 0, 1, 0 },
@@ -50,7 +50,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.S:
-                return new Tetrimino(
+                return new  (
                     new int[,]
                     {
                         { 0, 1, 1 },
@@ -60,7 +60,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.Z:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 1, 1, 0 },
@@ -70,7 +70,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.J:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 1, 0, 0 },
@@ -80,7 +80,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.L:
-                return new Tetrimino(
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 0, 0, 1 },
@@ -94,14 +94,14 @@ public class TetriminoFactory : ITetriminoFactory
         }
     }
 
-    public IEnumerable<Tetrimino> List()
+    public IEnumerable<TetriminoPiece> List()
     {
         return Enum.GetValues<TetriminoType>()
             .Select(t => Create(t))
             .ToList();
     }
 
-    public Tetrimino Next()
+    public TetriminoPiece Next()
     {
         var values = Enum.GetValues(typeof(TetriminoType));
         var randomType = (TetriminoType)values.GetValue(random.Next(values.Length));

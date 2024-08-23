@@ -1,14 +1,15 @@
-﻿using System;
+﻿using BKey.Tetris.Logic.Tetrimino;
+using System;
 
-namespace BKey.Tetris.Logic;
-public class Game
+namespace BKey.Tetris.Logic.Game;
+public class GameController
 {
     private readonly IBoard board;
     private readonly IDisplay display;
     private readonly ITetriminoFactory tetriminoFactory;
 
 
-    public Game(
+    public GameController(
         IBoard board,
         IDisplay display,
         ITetriminoFactory tetriminoFactory)
