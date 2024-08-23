@@ -2,7 +2,6 @@
 internal enum GameState
 {
     Input,
-    Rotation,
     Movement,
     Commit,
     LineClear,

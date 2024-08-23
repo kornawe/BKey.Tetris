@@ -1,75 +1,80 @@
-﻿using BKey.Tetris.Logic.Tetrimino;
+﻿using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Tetrimino;
 using System;
+using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
-public class GameController
+public class GameController : IGameController
 {
-    private readonly IBoard board;
-    private readonly IDisplay display;
-    private readonly ITetriminoFactory tetriminoFactory;
+    private IBoard Board { get; }
+    private IDisplay Display { get; }
+    private ITetriminoFactory TetriminoFactory { get; }
+    private IInputQueue InputQueue { get; }
 
 
     public GameController(
         IBoard board,
         IDisplay display,
-        ITetriminoFactory tetriminoFactory)
+        ITetriminoFactory tetriminoFactory,
+        IInputQueue inputQueue)
     {
-        this.board = board;
-        this.display = display;
-        this.tetriminoFactory = tetriminoFactory;
+        Board = board;
+        Display = display;
+        TetriminoFactory = tetriminoFactory;
+        InputQueue = inputQueue;
         SpawnTetrimino();
     }
 
     private void SpawnTetrimino()
     {
-        board.CurrentTetrimino = tetriminoFactory.Next();
-        board.CurrentTetrimino.X = board.Width / 2 - board.CurrentTetrimino.Shape.GetLength(1) / 2;
-        board.CurrentTetrimino.Y = 0;
+        Board.CurrentTetrimino = TetriminoFactory.Next();
+        Board.CurrentTetrimino.X = Board.Width / 2 - Board.CurrentTetrimino.Shape.GetLength(1) / 2;
+        Board.CurrentTetrimino.Y = 0;
     }
 
-    public void Run()
+    public async Task Run()
     {
         while (true)
         {
-            display.Draw();
+            Display.Draw();
             var key = Console.ReadKey(true).Key;
 
             if (key == ConsoleKey.LeftArrow)
             {
-                board.CurrentTetrimino.X--;
-                if (board.IsCollision(board.CurrentTetrimino))
+                Board.CurrentTetrimino.X--;
+                if (Board.IsCollision(Board.CurrentTetrimino))
                 {
-                    board.CurrentTetrimino.X++;
+                    Board.CurrentTetrimino.X++;
                 }
             }
             else if (key == ConsoleKey.RightArrow)
             {
-                board.CurrentTetrimino.X++;
-                if (board.IsCollision(board.CurrentTetrimino))
+                Board.CurrentTetrimino.X++;
+                if (Board.IsCollision(Board.CurrentTetrimino))
                 {
-                    board.CurrentTetrimino.X--;
+                    Board.CurrentTetrimino.X--;
                 }
             }
             else if (key == ConsoleKey.UpArrow)
             {
-                board.CurrentTetrimino.Rotate();
-                if (board.IsCollision(board.CurrentTetrimino))
+                Board.CurrentTetrimino.Rotate();
+                if (Board.IsCollision(Board.CurrentTetrimino))
                 {
-                    board.CurrentTetrimino.Rotate(); // Reverse rotation
-                    board.CurrentTetrimino.Rotate();
-                    board.CurrentTetrimino.Rotate();
+                    Board.CurrentTetrimino.Rotate(); // Reverse rotation
+                    Board.CurrentTetrimino.Rotate();
+                    Board.CurrentTetrimino.Rotate();
                 }
             }
             else if (key == ConsoleKey.DownArrow)
             {
-                board.CurrentTetrimino.Y++;
-                if (board.IsCollision(board.CurrentTetrimino))
+                Board.CurrentTetrimino.Y++;
+                if (Board.IsCollision(Board.CurrentTetrimino))
                 {
-                    board.CurrentTetrimino.Y--;
-                    board.PlaceTetrimino(board.CurrentTetrimino);
-                    board.ClearLines();
+                    Board.CurrentTetrimino.Y--;
+                    Board.PlaceTetrimino(Board.CurrentTetrimino);
+                    Board.ClearLines();
                     SpawnTetrimino();
-                    if (board.IsCollision(board.CurrentTetrimino))
+                    if (Board.IsCollision(Board.CurrentTetrimino))
                     {
                         Console.WriteLine("Game Over!");
                         break;
