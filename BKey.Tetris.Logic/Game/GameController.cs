@@ -6,9 +6,9 @@ namespace BKey.Tetris.Logic.Game;
 public class GameController : IGameController
 {
     private IBoard Board { get; }
-    private IDisplay Display { get; }
+    private IGameDisplay Display { get; }
     private ITetriminoFactory TetriminoFactory { get; }
-    private IInputQueue InputQueue { get; }
+    private IInputQueue<MovementRequest> MovementQueue { get; }
     private IGameScore Score { get; }
 
     private GameState CurrentState { get; set; }
@@ -21,15 +21,15 @@ public class GameController : IGameController
 
     public GameController(
         IBoard board,
-        IDisplay display,
+        IGameDisplay display,
         ITetriminoFactory tetriminoFactory,
-        IInputQueue inputQueue,
+        IInputQueue<MovementRequest> inputQueue,
         IGameScore score)
     {
         Board = board;
         Display = display;
         TetriminoFactory = tetriminoFactory;
-        InputQueue = inputQueue;
+        MovementQueue = inputQueue;
         CurrentState = GameState.NewPieceSpawn;
         Score = score;
     }
@@ -70,7 +70,7 @@ public class GameController : IGameController
         // For example, let's assume we're moving to the Rotation state after input
         // This would need to be expanded based on actual input handling
 
-        if (InputQueue.IsEmpty)
+        if (MovementQueue.IsEmpty)
         {
             return;
         }
@@ -83,7 +83,7 @@ public class GameController : IGameController
         // Move the Tetrimino down (or based on user input) and check for collision
         // If movement is complete, move to the commit state
 
-        var movement = InputQueue.Dequeue();
+        var movement = MovementQueue.Dequeue();
 
         if (movement == MovementRequest.Rotate)
         {

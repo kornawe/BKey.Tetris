@@ -1,24 +1,31 @@
 ﻿using BKey.Tetris.Logic.Input;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console.Input;
-internal class ConsoleInputQueue : IInputQueue
+internal class ConsoleInputQueue<T> : IInputQueue<T> where T : Enum
 {
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Task listeningTask;
 
-    private MovementRequest MovementRequest { get; set; }
+    private T Request { get; set; }
     private bool disposedValue;
 
-    public ConsoleInputQueue()
+    private Dictionary<ConsoleKey, T> KeyMappings { get; }
+
+    public ConsoleInputQueue(Dictionary<ConsoleKey, T> keyMappings)
     {
         cancellationTokenSource = new CancellationTokenSource();
+
+        KeyMappings = keyMappings;
+
         listeningTask = Task.Run(ListenForInput, cancellationTokenSource.Token);
+
     }
 
-    public bool IsEmpty => MovementRequest == MovementRequest.None;
+    public bool IsEmpty => Request.Equals(default(T));
 
     private async Task ListenForInput()
     {
@@ -26,20 +33,9 @@ internal class ConsoleInputQueue : IInputQueue
         {
             var key = System.Console.ReadKey(intercept: true).Key;
 
-            switch (key)
+            if (KeyMappings.TryGetValue(key, out T? movementRequest))
             {
-                case ConsoleKey.LeftArrow:
-                    MovementRequest = MovementRequest.Left;
-                    break;
-                case ConsoleKey.RightArrow:
-                    MovementRequest = MovementRequest.Right;
-                    break;
-                case ConsoleKey.UpArrow:
-                    MovementRequest = MovementRequest.Rotate;
-                    break;
-                case ConsoleKey.DownArrow:
-                    MovementRequest = MovementRequest.Down;
-                    break;
+                Request = movementRequest;
             }
 
             await Task.Delay(10); // Small delay to prevent busy waiting
@@ -48,13 +44,13 @@ internal class ConsoleInputQueue : IInputQueue
 
     public void Clear()
     {
-        MovementRequest = MovementRequest.None;
+        Request = default(T)!;
     }
 
-    public MovementRequest? Dequeue()
+    public T Dequeue()
     {
-        var value = MovementRequest;
-        MovementRequest = MovementRequest.None;
+        var value = Request;
+        Request = default(T)!;
         return value;
     }
 

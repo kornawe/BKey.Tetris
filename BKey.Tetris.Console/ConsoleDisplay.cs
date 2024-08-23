@@ -3,7 +3,7 @@ using BKey.Tetris.Logic.Game;
 using System;
 
 namespace BKey.Tetris.Console;
-public class ConsoleDisplay : IDisplay
+public class ConsoleDisplay : IGameDisplay
 {
     private readonly IBoard board;
     private readonly IGameScore gameScore;

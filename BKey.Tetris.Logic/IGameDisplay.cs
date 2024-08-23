@@ -1,5 +1,5 @@
 ﻿namespace BKey.Tetris.Logic;
-public interface IDisplay
+public interface IGameDisplay
 {
     void Draw();
 }
