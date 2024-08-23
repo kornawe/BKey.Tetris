@@ -1,6 +1,7 @@
 ﻿using BKey.Tetris.Console.Input;
 using BKey.Tetris.Console.Menu;
 using BKey.Tetris.Logic;
+using BKey.Tetris.Logic.Board;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
@@ -38,11 +39,18 @@ internal class Program
         var random = new Random();
         IBoard board = new Board(10, 20);
         var score = new GameScore();
-        IGameDisplay display = new ConsoleDisplay(board, score);
+        var boardBuffer = new BoardBuffer(board);
+        IGameDisplay display = new ConsoleDisplay(boardBuffer, score);
         ITetriminoFactory factory = new TetriminoFactory(random);
         using var inputQueue = new ConsoleInputQueue<MovementRequest>(GameKeyMappings);
-        var game = new GameController(board, display, factory, inputQueue, score);
-        await game.Run();
+        var game = new GameController(boardBuffer, factory, inputQueue, score);
+        var displayController = new DisplayController(display);
+
+        var gameTask = game.Run();
+        var displayTask = displayController.RunDisplayLoop(new System.Threading.CancellationToken());
+
+        await gameTask;
+        await displayTask;
     }
 
     static private void StartNewGame()

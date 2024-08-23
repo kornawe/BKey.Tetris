@@ -1,12 +1,12 @@
-﻿using BKey.Tetris.Logic.Input;
+﻿using BKey.Tetris.Logic.Board;
+using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
 public class GameController : IGameController
 {
-    private IBoard Board { get; }
-    private IGameDisplay Display { get; }
+    private BoardBuffer BoardBuffer { get; }
     private ITetriminoFactory TetriminoFactory { get; }
     private IInputQueue<MovementRequest> MovementQueue { get; }
     private IGameScore Score { get; }
@@ -20,14 +20,12 @@ public class GameController : IGameController
     private const int None = 0;
 
     public GameController(
-        IBoard board,
-        IGameDisplay display,
+        BoardBuffer boardBuffer,
         ITetriminoFactory tetriminoFactory,
         IInputQueue<MovementRequest> inputQueue,
         IGameScore score)
     {
-        Board = board;
-        Display = display;
+        BoardBuffer = boardBuffer;
         TetriminoFactory = tetriminoFactory;
         MovementQueue = inputQueue;
         CurrentState = GameState.NewPieceSpawn;
@@ -83,26 +81,27 @@ public class GameController : IGameController
         // Move the Tetrimino down (or based on user input) and check for collision
         // If movement is complete, move to the commit state
 
+        var board = BoardBuffer.GetWriteBoard();
         var movement = MovementQueue.Dequeue();
 
         if (movement == MovementRequest.Rotate)
         {
-            Board.RotateTetrimino(Board.CurrentTetrimino);
+            board.RotateTetrimino();
         }
 
         if (movement == MovementRequest.Left)
         {
-            Board.MoveTetrimino(Board.CurrentTetrimino, Left, None);
+            board.MoveTetrimino(Left, None);
         }
 
         if (movement == MovementRequest.Right)
         {
-            Board.MoveTetrimino(Board.CurrentTetrimino, Right, None);
+            board.MoveTetrimino(Right, None);
         }
 
         if (movement == MovementRequest.Down)
         {
-            Board.MoveTetrimino(Board.CurrentTetrimino, None, Down);
+            board.MoveTetrimino(None, Down);
         }
 
         CurrentState = GameState.Commit;
@@ -112,13 +111,11 @@ public class GameController : IGameController
     {
         // Add the Tetrimino to the board and check if it is placed
         // If placed, move to the line clear state
-        if (!Board.CanMove(Board.CurrentTetrimino, None, Down))
+        var board = BoardBuffer.GetWriteBoard();
+        if (!board.CanMove(None, Down))
         {
-            Board.PlaceTetrimino(Board.CurrentTetrimino);
+            board.PlaceTetrimino();
             Score.AddPiecePlaced();
-            Board.CurrentTetrimino = null;
-            var linesCleared = Board.ClearLines();
-            Score.AddLinesCleared(linesCleared);
         }
 
         CurrentState = GameState.LineClear;
@@ -128,18 +125,24 @@ public class GameController : IGameController
     {
         // Check and clear any full lines on the board
         // After clearing lines, move to the new piece spawn state
-        //Board.ClearLines();
+        var board = BoardBuffer.GetWriteBoard();
+        if (board.CurrentTetrimino == null)
+        {
+            var linesCleared = board.ClearLines();
+            Score.AddLinesCleared(linesCleared);
+        }
+
         CurrentState = GameState.NewPieceSpawn;
     }
 
     private void SpawnNewPiece()
     {
-        if (Board.CurrentTetrimino == null)
+        var board = BoardBuffer.GetWriteBoard();
+        if (board.CurrentTetrimino == null)
         {
             // Spawn a new Tetrimino and place it on the board
-            Board.CurrentTetrimino = TetriminoFactory.Next();
-            Board.CurrentTetrimino.X = Board.Width / 2 - Board.CurrentTetrimino.Shape.GetLength(1) / 2;
-            Board.CurrentTetrimino.Y = 0;
+            board.AddTetrmino(TetriminoFactory.Next());
+
         }
 
         // Move to the render state
@@ -149,7 +152,7 @@ public class GameController : IGameController
     private void Render()
     {
         // Render the current state of the board and the active Tetrimino
-        Display.Draw();
+        BoardBuffer.SwapBuffers();
 
         // Move back to the input state after rendering
         CurrentState = GameState.Input;

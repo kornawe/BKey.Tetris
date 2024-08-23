@@ -1,25 +1,40 @@
 ﻿using BKey.Tetris.Logic;
+using BKey.Tetris.Logic.Board;
 using BKey.Tetris.Logic.Game;
 using System;
 
 namespace BKey.Tetris.Console;
 public class ConsoleDisplay : IGameDisplay
 {
-    private readonly IBoard board;
+    private readonly BoardBuffer _boardBuffer;
     private readonly IGameScore gameScore;
 
-    public ConsoleDisplay(IBoard board, IGameScore gameScore)
+    private bool _firstDraw = true;
+
+    private (int Left, int Top) ScorePosition = (0, 0);
+    private (int Left, int Top) BoardPosition = (0, 1);
+
+    public ConsoleDisplay(BoardBuffer boardBuffer, IGameScore gameScore)
     {
-        this.board = board;
+        _boardBuffer = boardBuffer;
         this.gameScore = gameScore;
     }
 
     public void Draw()
     {
-        System.Console.Clear();
+        if (_firstDraw)
+        {
+            _firstDraw = false;
+            System.Console.CursorVisible = false;
+            System.Console.Clear();
+        }
 
         // Display the game score stats
+        System.Console.SetCursorPosition(ScorePosition.Left, ScorePosition.Top);
         System.Console.WriteLine($"Time: {gameScore.Elapsed.ToString(@"hh\:mm\:ss")} | Lines Cleared: {gameScore.LinesCleared} | Pieces Placed: {gameScore.PiecesPlaced}");
+
+        System.Console.SetCursorPosition(BoardPosition.Left, BoardPosition.Top);
+        var board = _boardBuffer.GetReadBoard();
 
         int width = board.Width;
         int height = board.Height;
@@ -75,5 +90,9 @@ public class ConsoleDisplay : IGameDisplay
 
         // Draw the bottom border
         System.Console.WriteLine(new string('-', width + 2));
+    }
+
+    public void Dispose() {
+        System.Console.CursorVisible = true;
     }
 }

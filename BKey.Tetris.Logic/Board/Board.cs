@@ -1,14 +1,14 @@
 ﻿using BKey.Tetris.Logic.Tetrimino;
 
-namespace BKey.Tetris.Logic;
-public class Board : IBoard
+namespace BKey.Tetris.Logic.Board;
+public class Board : IBoard, IReadonlyBoard
 {
     public int Width { get; }
     public int Height { get; }
 
     public bool[,] Cells { get; }
 
-    public TetriminoPiece CurrentTetrimino { get; set; }
+    public TetriminoPiece? CurrentTetrimino { get; private set; }
 
     public Board(int width, int height)
     {
@@ -17,7 +17,34 @@ public class Board : IBoard
         Cells = new bool[height, width];
     }
 
-    public bool CanMove(TetriminoPiece tetrimino, int deltaX, int deltaY)
+    public Board(Board other)
+    {
+        Width = other.Width;
+        Height = other.Height;
+        Cells = new bool[Height, Width];
+        // TODO make better
+        for(var i = 0; i < Height; i++)
+        {
+            for (var j = 0; j < Width; j++)
+            {
+                Cells[i, j] = other.Cells[i, j];
+            }
+        }
+        if (other.CurrentTetrimino != null)
+        {
+            CurrentTetrimino = new TetriminoPiece(other.CurrentTetrimino);
+        }
+    }
+
+    public void AddTetrmino(TetriminoPiece piece)
+    {
+        piece.X = Width / 2 - piece.Shape.GetLength(1) / 2;
+        piece.Y = 0;
+
+        CurrentTetrimino = piece;
+    }
+
+    internal bool CanMove(TetriminoPiece tetrimino, int deltaX, int deltaY)
     {
         for (int i = 0; i < tetrimino.Shape.GetLength(0); i++)
         {
@@ -38,7 +65,16 @@ public class Board : IBoard
         return true;
     }
 
-    public bool CanRotate(TetriminoPiece tetrimino)
+    public bool CanMove(int deltaX, int deltaY)
+    {
+        if (CurrentTetrimino == null)
+        {
+            return false;
+        }
+        return CanMove(CurrentTetrimino, deltaX, deltaY);
+    }
+
+    internal bool CanRotate(TetriminoPiece tetrimino)
     {
         int[,] rotatedShape = RotateShape(tetrimino.Shape);
         for (int i = 0; i < rotatedShape.GetLength(0); i++)
@@ -60,6 +96,15 @@ public class Board : IBoard
         return true;
     }
 
+    public bool CanRotate()
+    {
+        if (CurrentTetrimino == null)
+        {
+            return false;
+        }
+        return CanRotate(CurrentTetrimino);
+    }
+
     public void MoveTetrimino(TetriminoPiece tetrimino, int deltaX, int deltaY)
     {
         if (CanMove(tetrimino, deltaX, deltaY))
@@ -69,6 +114,15 @@ public class Board : IBoard
         }
     }
 
+    public void MoveTetrimino(int deltaX, int deltaY)
+    {
+        if (CurrentTetrimino == null)
+        {
+            return;
+        }
+        MoveTetrimino(CurrentTetrimino, deltaX, deltaY);
+    }
+
     public void RotateTetrimino(TetriminoPiece tetrimino)
     {
         if (CanRotate(tetrimino))
@@ -76,6 +130,15 @@ public class Board : IBoard
             tetrimino.Shape = RotateShape(tetrimino.Shape);
             tetrimino.Rotation = (tetrimino.Rotation + 90) % 360;
         }
+    }
+
+    public void RotateTetrimino()
+    {
+        if (CurrentTetrimino == null)
+        {
+            return;
+        }
+        RotateTetrimino(CurrentTetrimino);
     }
 
     public void PlaceTetrimino(TetriminoPiece tetrimino)
@@ -90,6 +153,16 @@ public class Board : IBoard
                 }
             }
         }
+    }
+
+    public void PlaceTetrimino()
+    {
+        if (CurrentTetrimino == null)
+        {
+            return;
+        }
+        PlaceTetrimino(CurrentTetrimino);
+        CurrentTetrimino = null;
     }
 
     private int[,] RotateShape(int[,] shape)
@@ -148,6 +221,16 @@ public class Board : IBoard
         {
             Cells[0, x] = false;
         }
+    }
+
+    public IBoard Clone()
+    {
+        return new Board(this);
+    }
+
+    public IReadonlyBoard AsReadonly()
+    {
+        return this;
     }
 }
 
