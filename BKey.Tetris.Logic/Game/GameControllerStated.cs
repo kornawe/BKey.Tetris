@@ -52,7 +52,7 @@ public class GameControllerStated : IGameController
                     break;
             }
 
-            await Task.Delay(50);
+            await Task.Delay(10);
         }
     }
 
@@ -77,7 +77,7 @@ public class GameControllerStated : IGameController
 
         var movement = InputQueue.Dequeue();
 
-        if (movement == InputRequest.Rotate)
+        if (movement == MovementRequest.Rotate)
         {
             Board.CurrentTetrimino.Rotate();
             if (Board.IsCollision(Board.CurrentTetrimino))
@@ -88,7 +88,7 @@ public class GameControllerStated : IGameController
             }
         }
 
-        if (movement == InputRequest.Left)
+        if (movement == MovementRequest.Left)
         {
             Board.CurrentTetrimino.X--;
             if (Board.IsCollision(Board.CurrentTetrimino))
@@ -97,7 +97,7 @@ public class GameControllerStated : IGameController
             }
         }
 
-        if (movement == InputRequest.Right)
+        if (movement == MovementRequest.Right)
         {
             Board.CurrentTetrimino.X++;
             if (Board.IsCollision(Board.CurrentTetrimino))
@@ -106,7 +106,7 @@ public class GameControllerStated : IGameController
             }
         }
 
-        if (movement == InputRequest.Down)
+        if (movement == MovementRequest.Down)
         {
             Board.CurrentTetrimino.Y++;
             if (Board.IsCollision(Board.CurrentTetrimino))

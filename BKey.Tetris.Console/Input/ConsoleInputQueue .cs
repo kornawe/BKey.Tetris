@@ -1,59 +1,45 @@
 ﻿using BKey.Tetris.Logic.Input;
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console.Input;
 internal class ConsoleInputQueue : IInputQueue
 {
-    private readonly ConcurrentQueue<InputRequest> queue;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Task listeningTask;
+
+    private MovementRequest MovementRequest { get; set; }
     private bool disposedValue;
 
     public ConsoleInputQueue()
     {
-        queue = new ConcurrentQueue<InputRequest>();
         cancellationTokenSource = new CancellationTokenSource();
         listeningTask = Task.Run(ListenForInput, cancellationTokenSource.Token);
     }
 
-    public void Enqueue(InputRequest item)
-    {
-        queue.Enqueue(item);
-    }
-
-    public bool TryDequeue(out InputRequest item)
-    {
-        return queue.TryDequeue(out item);
-    }
-
-    public bool IsEmpty => queue.IsEmpty;
+    public bool IsEmpty => MovementRequest == MovementRequest.None;
 
     private async Task ListenForInput()
     {
         while (!cancellationTokenSource.Token.IsCancellationRequested)
         {
-            if (System.Console.KeyAvailable)
-            {
-                var key = System.Console.ReadKey(intercept: true).Key;
+            var key = System.Console.ReadKey(intercept: true).Key;
 
-                switch (key)
-                {
-                    case ConsoleKey.LeftArrow:
-                        Enqueue(InputRequest.Left);
-                        break;
-                    case ConsoleKey.RightArrow:
-                        Enqueue(InputRequest.Right);
-                        break;
-                    case ConsoleKey.UpArrow:
-                        Enqueue(InputRequest.Rotate);
-                        break;
-                    case ConsoleKey.DownArrow:
-                        Enqueue(InputRequest.Down);
-                        break;
-                }
+            switch (key)
+            {
+                case ConsoleKey.LeftArrow:
+                    MovementRequest = MovementRequest.Left;
+                    break;
+                case ConsoleKey.RightArrow:
+                    MovementRequest = MovementRequest.Right;
+                    break;
+                case ConsoleKey.UpArrow:
+                    MovementRequest = MovementRequest.Rotate;
+                    break;
+                case ConsoleKey.DownArrow:
+                    MovementRequest = MovementRequest.Down;
+                    break;
             }
 
             await Task.Delay(10); // Small delay to prevent busy waiting
@@ -62,23 +48,14 @@ internal class ConsoleInputQueue : IInputQueue
 
     public void Clear()
     {
-        queue.Clear();
+        MovementRequest = MovementRequest.None;
     }
 
-    public InputRequest? Dequeue()
+    public MovementRequest? Dequeue()
     {
-        if (queue.TryDequeue(out var item)) {
-            return item;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public InputRequest? Peek()
-    {
-        throw new NotImplementedException();
+        var value = MovementRequest;
+        MovementRequest = MovementRequest.None;
+        return value;
     }
 
     protected virtual void Dispose(bool disposing)
@@ -95,7 +72,6 @@ internal class ConsoleInputQueue : IInputQueue
 
             // free unmanaged resources (unmanaged objects) and override finalizer
             // set large fields to null
-            queue.Clear();
             disposedValue = true;
         }
     }
