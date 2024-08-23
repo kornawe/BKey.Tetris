@@ -13,10 +13,11 @@ internal class Program
     {
         var random = new Random();
         IBoard board = new Board(10, 20);
-        IDisplay display = new ConsoleDisplay(board);
+        var score = new GameScore();
+        IDisplay display = new ConsoleDisplay(board, score);
         ITetriminoFactory factory = new TetriminoFactory(random);
         using var inputQueue = new ConsoleInputQueue();
-        var game = new GameControllerStated(board, display, factory, inputQueue);
+        var game = new GameController(board, display, factory, inputQueue, score);
         await game.Run();
     }
 }

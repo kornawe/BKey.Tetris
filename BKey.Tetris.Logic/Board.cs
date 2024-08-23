@@ -109,8 +109,9 @@ public class Board : IBoard
         return rotatedShape;
     }
 
-    public void ClearLines()
+    public int ClearLines()
     {
+        var linesCleared = 0;
         for (int y = Height - 1; y >= 0; y--)
         {
             bool isLineFull = true;
@@ -127,8 +128,10 @@ public class Board : IBoard
             {
                 ClearLine(y);
                 y++; // Recheck the same line after clearing
+                linesCleared++;
             }
         }
+        return linesCleared;
     }
 
     private void ClearLine(int line)

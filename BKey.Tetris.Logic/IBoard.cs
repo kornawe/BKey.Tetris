@@ -12,7 +12,7 @@ public interface IBoard
 
     bool CanMove(TetriminoPiece tetrimino, int deltaX, int deltaY);
     bool CanRotate(TetriminoPiece tetrimino);
-    void ClearLines();
+    int ClearLines();
     void MoveTetrimino(TetriminoPiece tetrimino, int deltaX, int deltaY);
     void PlaceTetrimino(TetriminoPiece tetrimino);
     void RotateTetrimino(TetriminoPiece tetrimino);

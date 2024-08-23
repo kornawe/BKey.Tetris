@@ -1,19 +1,25 @@
 ﻿using BKey.Tetris.Logic;
+using BKey.Tetris.Logic.Game;
 using System;
 
 namespace BKey.Tetris.Console;
 public class ConsoleDisplay : IDisplay
 {
     private readonly IBoard board;
+    private readonly IGameScore gameScore;
 
-    public ConsoleDisplay(IBoard board)
+    public ConsoleDisplay(IBoard board, IGameScore gameScore)
     {
         this.board = board;
+        this.gameScore = gameScore;
     }
 
     public void Draw()
     {
         System.Console.Clear();
+
+        // Display the game score stats
+        System.Console.WriteLine($"Time: {gameScore.Elapsed.ToString(@"hh\:mm\:ss")} | Lines Cleared: {gameScore.LinesCleared} | Pieces Placed: {gameScore.PiecesPlaced}");
 
         int width = board.Width;
         int height = board.Height;
@@ -71,4 +77,3 @@ public class ConsoleDisplay : IDisplay
         System.Console.WriteLine(new string('-', width + 2));
     }
 }
-

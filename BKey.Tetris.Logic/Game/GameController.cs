@@ -1,15 +1,15 @@
 ﻿using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
-using System;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
-public class GameControllerStated : IGameController
+public class GameController : IGameController
 {
-    private readonly IBoard Board;
+    private IBoard Board { get; }
     private IDisplay Display { get; }
     private ITetriminoFactory TetriminoFactory { get; }
     private IInputQueue InputQueue { get; }
+    private IGameScore Score { get; }
 
     private GameState CurrentState { get; set; }
 
@@ -19,17 +19,19 @@ public class GameControllerStated : IGameController
     private const int Down = 1;
     private const int None = 0;
 
-    public GameControllerStated(
+    public GameController(
         IBoard board,
         IDisplay display,
         ITetriminoFactory tetriminoFactory,
-        IInputQueue inputQueue)
+        IInputQueue inputQueue,
+        IGameScore score)
     {
         Board = board;
         Display = display;
         TetriminoFactory = tetriminoFactory;
         InputQueue = inputQueue;
         CurrentState = GameState.NewPieceSpawn;
+        Score = score;
     }
 
     public async Task Run()
@@ -113,8 +115,10 @@ public class GameControllerStated : IGameController
         if (!Board.CanMove(Board.CurrentTetrimino, None, Down))
         {
             Board.PlaceTetrimino(Board.CurrentTetrimino);
+            Score.AddPiecePlaced();
             Board.CurrentTetrimino = null;
-            Board.ClearLines();
+            var linesCleared = Board.ClearLines();
+            Score.AddLinesCleared(linesCleared);
         }
 
         CurrentState = GameState.LineClear;
