@@ -60,7 +60,7 @@ public class ConsoleDisplay : IDisplay
 
                 if (!isTetriminoPart)
                 {
-                    System.Console.Write(board.Grid[i, j] == 0 ? "." : "#");
+                    System.Console.Write(board.Cells[i, j] ? "#" : ".");
                 }
             }
 

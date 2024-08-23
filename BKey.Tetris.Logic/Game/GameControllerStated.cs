@@ -13,6 +13,12 @@ public class GameControllerStated : IGameController
 
     private GameState CurrentState { get; set; }
 
+    private const int Left = -1;
+    private const int Right = 1;
+    private const int Up = -1;
+    private const int Down = 1;
+    private const int None = 0;
+
     public GameControllerStated(
         IBoard board,
         IDisplay display,
@@ -79,43 +85,22 @@ public class GameControllerStated : IGameController
 
         if (movement == MovementRequest.Rotate)
         {
-            Board.CurrentTetrimino.Rotate();
-            if (Board.IsCollision(Board.CurrentTetrimino))
-            {
-                Board.CurrentTetrimino.Rotate(); // Reverse rotation
-                Board.CurrentTetrimino.Rotate();
-                Board.CurrentTetrimino.Rotate();
-            }
+            Board.RotateTetrimino(Board.CurrentTetrimino);
         }
 
         if (movement == MovementRequest.Left)
         {
-            Board.CurrentTetrimino.X--;
-            if (Board.IsCollision(Board.CurrentTetrimino))
-            {
-                Board.CurrentTetrimino.X++;
-            }
+            Board.MoveTetrimino(Board.CurrentTetrimino, Left, None);
         }
 
         if (movement == MovementRequest.Right)
         {
-            Board.CurrentTetrimino.X++;
-            if (Board.IsCollision(Board.CurrentTetrimino))
-            {
-                Board.CurrentTetrimino.X--;
-            }
+            Board.MoveTetrimino(Board.CurrentTetrimino, Right, None);
         }
 
         if (movement == MovementRequest.Down)
         {
-            Board.CurrentTetrimino.Y++;
-            if (Board.IsCollision(Board.CurrentTetrimino))
-            {
-                Board.CurrentTetrimino.Y--;
-                Board.PlaceTetrimino(Board.CurrentTetrimino);
-                Board.CurrentTetrimino = null;
-                Board.ClearLines();
-            }
+            Board.MoveTetrimino(Board.CurrentTetrimino, None, Down);
         }
 
         CurrentState = GameState.Commit;
@@ -125,8 +110,12 @@ public class GameControllerStated : IGameController
     {
         // Add the Tetrimino to the board and check if it is placed
         // If placed, move to the line clear state
-
-        
+        if (!Board.CanMove(Board.CurrentTetrimino, None, Down))
+        {
+            Board.PlaceTetrimino(Board.CurrentTetrimino);
+            Board.CurrentTetrimino = null;
+            Board.ClearLines();
+        }
 
         CurrentState = GameState.LineClear;
     }

@@ -3,21 +3,21 @@
 namespace BKey.Tetris.Logic;
 public class Board : IBoard
 {
-    public int[,] Grid { get; }
-
     public int Width { get; }
     public int Height { get; }
 
-    public TetriminoPiece? CurrentTetrimino { get; set; }
+    public bool[,] Cells { get; }
+
+    public TetriminoPiece CurrentTetrimino { get; set; }
 
     public Board(int width, int height)
     {
         Width = width;
         Height = height;
-        Grid = new int[height, width];
+        Cells = new bool[height, width];
     }
 
-    public bool IsCollision(TetriminoPiece tetrimino)
+    public bool CanMove(TetriminoPiece tetrimino, int deltaX, int deltaY)
     {
         for (int i = 0; i < tetrimino.Shape.GetLength(0); i++)
         {
@@ -25,17 +25,57 @@ public class Board : IBoard
             {
                 if (tetrimino.Shape[i, j] != 0)
                 {
-                    int newX = tetrimino.X + j;
-                    int newY = tetrimino.Y + i;
+                    int newX = tetrimino.X + j + deltaX;
+                    int newY = tetrimino.Y + i + deltaY;
 
-                    if (newX < 0 || newX >= Width || newY < 0 || newY >= Height || Grid[newY, newX] != 0)
+                    if (newX < 0 || newX >= Width || newY < 0 || newY >= Height || Cells[newY, newX])
                     {
-                        return true;
+                        return false;
                     }
                 }
             }
         }
-        return false;
+        return true;
+    }
+
+    public bool CanRotate(TetriminoPiece tetrimino)
+    {
+        int[,] rotatedShape = RotateShape(tetrimino.Shape);
+        for (int i = 0; i < rotatedShape.GetLength(0); i++)
+        {
+            for (int j = 0; j < rotatedShape.GetLength(1); j++)
+            {
+                if (rotatedShape[i, j] != 0)
+                {
+                    int newX = tetrimino.X + j;
+                    int newY = tetrimino.Y + i;
+
+                    if (newX < 0 || newX >= Width || newY < 0 || newY >= Height || Cells[newY, newX])
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public void MoveTetrimino(TetriminoPiece tetrimino, int deltaX, int deltaY)
+    {
+        if (CanMove(tetrimino, deltaX, deltaY))
+        {
+            tetrimino.X += deltaX;
+            tetrimino.Y += deltaY;
+        }
+    }
+
+    public void RotateTetrimino(TetriminoPiece tetrimino)
+    {
+        if (CanRotate(tetrimino))
+        {
+            tetrimino.Shape = RotateShape(tetrimino.Shape);
+            tetrimino.Rotation = (tetrimino.Rotation + 90) % 360;
+        }
     }
 
     public void PlaceTetrimino(TetriminoPiece tetrimino)
@@ -46,43 +86,66 @@ public class Board : IBoard
             {
                 if (tetrimino.Shape[i, j] != 0)
                 {
-                    Grid[tetrimino.Y + i, tetrimino.X + j] = tetrimino.Shape[i, j];
+                    Cells[tetrimino.Y + i, tetrimino.X + j] = true;
                 }
             }
         }
+    }
+
+    private int[,] RotateShape(int[,] shape)
+    {
+        int rowCount = shape.GetLength(0);
+        int colCount = shape.GetLength(1);
+        int[,] rotatedShape = new int[colCount, rowCount];
+
+        for (int i = 0; i < rowCount; i++)
+        {
+            for (int j = 0; j < colCount; j++)
+            {
+                rotatedShape[j, rowCount - 1 - i] = shape[i, j];
+            }
+        }
+
+        return rotatedShape;
     }
 
     public void ClearLines()
     {
-        for (int i = Height - 1; i >= 0; i--)
+        for (int y = Height - 1; y >= 0; y--)
         {
-            bool isFullLine = true;
-            for (int j = 0; j < Width; j++)
+            bool isLineFull = true;
+            for (int x = 0; x < Width; x++)
             {
-                if (Grid[i, j] == 0)
+                if (!Cells[y, x])
                 {
-                    isFullLine = false;
+                    isLineFull = false;
                     break;
                 }
             }
 
-            if (isFullLine)
+            if (isLineFull)
             {
-                for (int k = i; k > 0; k--)
-                {
-                    for (int l = 0; l < Width; l++)
-                    {
-                        Grid[k, l] = Grid[k - 1, l];
-                    }
-                }
-
-                for (int l = 0; l < Width; l++)
-                {
-                    Grid[0, l] = 0;
-                }
-                i++; // Re-check the same line after shifting down
+                ClearLine(y);
+                y++; // Recheck the same line after clearing
             }
         }
     }
+
+    private void ClearLine(int line)
+    {
+        for (int y = line; y > 0; y--)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                Cells[y, x] = Cells[y - 1, x];
+            }
+        }
+
+        for (int x = 0; x < Width; x++)
+        {
+            Cells[0, x] = false;
+        }
+    }
 }
+
 

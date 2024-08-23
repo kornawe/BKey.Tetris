@@ -3,12 +3,17 @@
 namespace BKey.Tetris.Logic;
 public interface IBoard
 {
-    int Width { get; }
     int Height { get; }
-    int[,] Grid { get; }
-    TetriminoPiece? CurrentTetrimino { get; set; }
-    bool IsCollision(TetriminoPiece tetrimino);
-    void PlaceTetrimino(TetriminoPiece tetrimino);
-    void ClearLines();
-}
+    int Width { get; }
 
+    public bool[,] Cells { get; }
+
+    public TetriminoPiece CurrentTetrimino { get; set; }
+
+    bool CanMove(TetriminoPiece tetrimino, int deltaX, int deltaY);
+    bool CanRotate(TetriminoPiece tetrimino);
+    void ClearLines();
+    void MoveTetrimino(TetriminoPiece tetrimino, int deltaX, int deltaY);
+    void PlaceTetrimino(TetriminoPiece tetrimino);
+    void RotateTetrimino(TetriminoPiece tetrimino);
+}
