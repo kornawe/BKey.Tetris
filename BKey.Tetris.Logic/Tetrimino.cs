@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BKey.Tetris;
+namespace BKey.Tetris.Logic;
 public class Tetrimino
 {
     public int[,] Shape { get; private set; }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BKey.Tetris;
+namespace BKey.Tetris.Logic;
 public class TetriminoFactory : ITetriminoFactory
 {
     private Random random;

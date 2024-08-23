@@ -1,6 +1,7 @@
-﻿using System;
+﻿using BKey.Tetris.Logic;
+using System;
 
-namespace BKey.Tetris;
+namespace BKey.Tetris.Console;
 public class ConsoleDisplay : IDisplay
 {
     private readonly IBoard board;
@@ -12,18 +13,18 @@ public class ConsoleDisplay : IDisplay
 
     public void Draw()
     {
-        Console.Clear();
+        System.Console.Clear();
 
         int width = board.Width;
         int height = board.Height;
 
         // Draw the top border
-        Console.WriteLine(new string('-', width + 2));
+        System.Console.WriteLine(new string('-', width + 2));
 
         // Draw the grid with borders
         for (int i = 0; i < height; i++)
         {
-            Console.Write("|"); // Left border
+            System.Console.Write("|"); // Left border
 
             for (int j = 0; j < width; j++)
             {
@@ -45,9 +46,9 @@ public class ConsoleDisplay : IDisplay
 
                                 if (x == j && y == i)
                                 {
-                                    Console.ForegroundColor = board.CurrentTetrimino.Color;
-                                    Console.Write("#");
-                                    Console.ResetColor();
+                                    System.Console.ForegroundColor = board.CurrentTetrimino.Color;
+                                    System.Console.Write("#");
+                                    System.Console.ResetColor();
                                     isTetriminoPart = true;
                                     break;
                                 }
@@ -59,15 +60,15 @@ public class ConsoleDisplay : IDisplay
 
                 if (!isTetriminoPart)
                 {
-                    Console.Write(board.Grid[i, j] == 0 ? "." : "#");
+                    System.Console.Write(board.Grid[i, j] == 0 ? "." : "#");
                 }
             }
 
-            Console.WriteLine("|"); // Right border
+            System.Console.WriteLine("|"); // Right border
         }
 
         // Draw the bottom border
-        Console.WriteLine(new string('-', width + 2));
+        System.Console.WriteLine(new string('-', width + 2));
     }
 }
 

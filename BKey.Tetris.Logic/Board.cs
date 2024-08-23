@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace BKey.Tetris;
+﻿namespace BKey.Tetris.Logic;
 public class Board : IBoard
 {
     public int[,] Grid { get; }
@@ -82,19 +80,6 @@ public class Board : IBoard
                 }
                 i++; // Re-check the same line after shifting down
             }
-        }
-    }
-
-    public void Draw()
-    {
-        Console.Clear();
-        for (int i = 0; i < Height; i++)
-        {
-            for (int j = 0; j < Width; j++)
-            {
-                Console.Write(Grid[i, j] == 0 ? "." : "#");
-            }
-            Console.WriteLine();
         }
     }
 }

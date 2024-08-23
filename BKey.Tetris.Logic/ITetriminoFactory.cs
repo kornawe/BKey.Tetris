@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BKey.Tetris;
+namespace BKey.Tetris.Logic;
 public interface ITetriminoFactory
 {
     Tetrimino Create(TetriminoType type);

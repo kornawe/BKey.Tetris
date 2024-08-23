@@ -1,4 +1,4 @@
-﻿namespace BKey.Tetris;
+﻿namespace BKey.Tetris.Logic;
 public enum TetriminoType
 {
     I, O, T, S, Z, J, L

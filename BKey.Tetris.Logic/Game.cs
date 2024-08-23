@@ -1,33 +1,12 @@
 ﻿using System;
 
-namespace BKey.Tetris;
+namespace BKey.Tetris.Logic;
 public class Game
 {
     private readonly IBoard board;
     private readonly IDisplay display;
     private readonly ITetriminoFactory tetriminoFactory;
 
-    private static readonly int[][,] TetriminoShapes = new int[][,]
-    {
-        new int[,] { { 1, 1, 1, 1 } }, // I
-        new int[,] { { 1, 1 }, { 1, 1 } }, // O
-        new int[,] { { 0, 1, 0 }, { 1, 1, 1 } }, // T
-        new int[,] { { 1, 1, 0 }, { 0, 1, 1 } }, // S
-        new int[,] { { 0, 1, 1 }, { 1, 1, 0 } }, // Z
-        new int[,] { { 1, 0, 0 }, { 1, 1, 1 } }, // L
-        new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }  // J
-    };
-
-    private static readonly ConsoleColor[] TetriminoColors = new ConsoleColor[]
-    {
-        ConsoleColor.Cyan, // I
-        ConsoleColor.Yellow, // O
-        ConsoleColor.Magenta, // T
-        ConsoleColor.Green, // S
-        ConsoleColor.Red, // Z
-        ConsoleColor.Blue, // J
-        ConsoleColor.DarkYellow // L
-    };
 
     public Game(
         IBoard board,
