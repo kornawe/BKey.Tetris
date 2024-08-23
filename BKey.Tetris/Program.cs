@@ -6,7 +6,8 @@ internal class Program
     {
         IBoard board = new Board(10, 20);
         IDisplay display = new ConsoleDisplay(board);
-        Game game = new Game(board, display);
+        ITetriminoFactory factory = new TetriminoFactory();
+        Game game = new Game(board, display, factory);
         game.Run();
     }
 }

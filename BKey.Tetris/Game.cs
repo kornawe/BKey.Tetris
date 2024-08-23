@@ -5,8 +5,7 @@ public class Game
 {
     private readonly IBoard board;
     private readonly IDisplay display;
-    private Tetrimino currentTetrimino;
-    private Random random;
+    private readonly ITetriminoFactory tetriminoFactory;
 
     private static readonly int[][,] TetriminoShapes = new int[][,]
     {
@@ -19,17 +18,31 @@ public class Game
         new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }  // J
     };
 
-    public Game(IBoard board, IDisplay display)
+    private static readonly ConsoleColor[] TetriminoColors = new ConsoleColor[]
+    {
+        ConsoleColor.Cyan, // I
+        ConsoleColor.Yellow, // O
+        ConsoleColor.Magenta, // T
+        ConsoleColor.Green, // S
+        ConsoleColor.Red, // Z
+        ConsoleColor.Blue, // J
+        ConsoleColor.DarkYellow // L
+    };
+
+    public Game(
+        IBoard board,
+        IDisplay display,
+        ITetriminoFactory tetriminoFactory)
     {
         this.board = board;
         this.display = display;
-        random = new Random();
+        this.tetriminoFactory = tetriminoFactory;
         SpawnTetrimino();
     }
 
     private void SpawnTetrimino()
     {
-        board.CurrentTetrimino = new Tetrimino(TetriminoShapes[random.Next(TetriminoShapes.Length)]);
+        board.CurrentTetrimino = tetriminoFactory.Next();
         board.CurrentTetrimino.X = board.Width / 2 - board.CurrentTetrimino.Shape.GetLength(1) / 2;
         board.CurrentTetrimino.Y = 0;
     }

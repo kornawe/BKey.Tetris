@@ -14,10 +14,18 @@ public class ConsoleDisplay : IDisplay
     {
         Console.Clear();
 
-        // Draw the grid along with the current Tetrimino
-        for (int i = 0; i < board.Height; i++)
+        int width = board.Width;
+        int height = board.Height;
+
+        // Draw the top border
+        Console.WriteLine(new string('-', width + 2));
+
+        // Draw the grid with borders
+        for (int i = 0; i < height; i++)
         {
-            for (int j = 0; j < board.Width; j++)
+            Console.Write("|"); // Left border
+
+            for (int j = 0; j < width; j++)
             {
                 bool isTetriminoPart = false;
 
@@ -37,7 +45,9 @@ public class ConsoleDisplay : IDisplay
 
                                 if (x == j && y == i)
                                 {
+                                    Console.ForegroundColor = board.CurrentTetrimino.Color;
                                     Console.Write("#");
+                                    Console.ResetColor();
                                     isTetriminoPart = true;
                                     break;
                                 }
@@ -52,8 +62,12 @@ public class ConsoleDisplay : IDisplay
                     Console.Write(board.Grid[i, j] == 0 ? "." : "#");
                 }
             }
-            Console.WriteLine();
+
+            Console.WriteLine("|"); // Right border
         }
+
+        // Draw the bottom border
+        Console.WriteLine(new string('-', width + 2));
     }
 }
 
