@@ -22,11 +22,11 @@ internal class MenuController : IDisposable
             { ConsoleKey.Escape, MenuRequest.Back }
         };
 
-    public MenuController (MenuList menuList) : this (menuList, new ConsoleInputQueue<MenuRequest>(MenuKeyMappings))
+    public MenuController(MenuList menuList) : this(menuList, new ConsoleInputQueue<MenuRequest>(MenuKeyMappings))
     {
     }
 
-    public MenuController (MenuList menuList, IInputQueue<MenuRequest> menuInput)
+    public MenuController(MenuList menuList, IInputQueue<MenuRequest> menuInput)
     {
         MenuList = menuList;
         MenuInput = menuInput;
@@ -55,6 +55,7 @@ internal class MenuController : IDisposable
 
             await Task.Delay(50);
         }
+        MenuInput.Dispose();
     }
 
     protected virtual void Dispose(bool disposing)

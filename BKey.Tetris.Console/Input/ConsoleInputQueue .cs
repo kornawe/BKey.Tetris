@@ -8,6 +8,7 @@ namespace BKey.Tetris.Console.Input;
 internal class ConsoleInputQueue<T> : IInputQueue<T> where T : Enum
 {
     private readonly CancellationTokenSource cancellationTokenSource;
+    private readonly CancellationToken cancellationToken;
     private readonly Task listeningTask;
 
     private T Request { get; set; }
@@ -17,28 +18,29 @@ internal class ConsoleInputQueue<T> : IInputQueue<T> where T : Enum
 
     public ConsoleInputQueue(Dictionary<ConsoleKey, T> keyMappings)
     {
-        cancellationTokenSource = new CancellationTokenSource();
-
         KeyMappings = keyMappings;
-
-        listeningTask = Task.Run(ListenForInput, cancellationTokenSource.Token);
-
+        cancellationTokenSource = new CancellationTokenSource();
+        cancellationToken = cancellationTokenSource.Token;
+        listeningTask = Task.Run(ListenForInput, cancellationToken);
+        Request = default(T);
     }
 
-    public bool IsEmpty => Request.Equals(default(T));
+    public bool IsEmpty => Request.Equals(default(T)) && false;
 
     private async Task ListenForInput()
     {
-        while (!cancellationTokenSource.Token.IsCancellationRequested)
+
+        while (!cancellationToken.IsCancellationRequested)
         {
             var key = System.Console.ReadKey(intercept: true).Key;
 
             if (KeyMappings.TryGetValue(key, out T? movementRequest))
             {
-                Request = movementRequest;
+                if (!Request.Equals(movementRequest))
+                {
+                    Request = movementRequest;
+                }
             }
-
-            await Task.Delay(10); // Small delay to prevent busy waiting
         }
     }
 
@@ -63,7 +65,6 @@ internal class ConsoleInputQueue<T> : IInputQueue<T> where T : Enum
                 // dispose managed state (managed objects)
                 cancellationTokenSource.Cancel();
                 cancellationTokenSource.Dispose();
-                listeningTask?.Dispose();
             }
 
             // free unmanaged resources (unmanaged objects) and override finalizer
