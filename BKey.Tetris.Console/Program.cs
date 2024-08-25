@@ -23,7 +23,8 @@ internal class Program
 
     static async Task Main(string[] args)
     {
-        var mainMenu = new MenuList("Da Shape Game", "0.0.1");
+        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        var mainMenu = new MenuList("Da Shape Game", version);
         mainMenu.Add(new MenuOption("New Game", StartNewGame));
         mainMenu.Add(new MenuOption("Quit", QuitGame));
 
