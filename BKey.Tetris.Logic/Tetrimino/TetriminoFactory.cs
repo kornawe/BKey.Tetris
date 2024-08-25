@@ -6,9 +6,13 @@ namespace BKey.Tetris.Logic.Tetrimino;
 public class TetriminoFactory : ITetriminoFactory
 {
     private Random random;
+    private static IReadOnlyList<TetriminoType> TetriminoTypes { get; }
 
-    public TetriminoFactory() : this(new Random())
+    static TetriminoFactory()
     {
+        TetriminoTypes = Enum.GetValues(typeof(TetriminoType))
+            .Cast<TetriminoType>()
+            .ToArray();
     }
 
     public TetriminoFactory(Random random)
@@ -50,7 +54,7 @@ public class TetriminoFactory : ITetriminoFactory
                 );
 
             case TetriminoType.S:
-                return new  (
+                return new TetriminoPiece(
                     new int[,]
                     {
                         { 0, 1, 1 },
@@ -103,8 +107,12 @@ public class TetriminoFactory : ITetriminoFactory
 
     public TetriminoPiece Next()
     {
-        var values = Enum.GetValues(typeof(TetriminoType));
-        var randomType = (TetriminoType)values.GetValue(random.Next(values.Length));
+        int randomIndex;
+        lock (random)
+        {
+            randomIndex = random.Next(TetriminoTypes.Count);
+        }
+        var randomType = TetriminoTypes[randomIndex];
         return Create(randomType);
     }
 }

@@ -7,6 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BKey.Tetris.Console", "BKey
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BKey.Tetris.Logic", "BKey.Tetris.Logic\BKey.Tetris.Logic.csproj", "{1C519488-4BD5-46DA-B82C-0326B86295B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BKey.Tetris.Logic.Tests", "BKey.Tetris.Logic.Tests\BKey.Tetris.Logic.Tests.csproj", "{F2520B8A-A9A5-4BF1-9AEE-EFC1CACA61BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BKey.Tetris.Console.Tests", "BKey.Tetris.Console.Tests\BKey.Tetris.Console.Tests.csproj", "{C16EA8F1-B459-433A-A4B8-F8AD0BECF15E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{1C519488-4BD5-46DA-B82C-0326B86295B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C519488-4BD5-46DA-B82C-0326B86295B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C519488-4BD5-46DA-B82C-0326B86295B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2520B8A-A9A5-4BF1-9AEE-EFC1CACA61BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2520B8A-A9A5-4BF1-9AEE-EFC1CACA61BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2520B8A-A9A5-4BF1-9AEE-EFC1CACA61BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2520B8A-A9A5-4BF1-9AEE-EFC1CACA61BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C16EA8F1-B459-433A-A4B8-F8AD0BECF15E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C16EA8F1-B459-433A-A4B8-F8AD0BECF15E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C16EA8F1-B459-433A-A4B8-F8AD0BECF15E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C16EA8F1-B459-433A-A4B8-F8AD0BECF15E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
