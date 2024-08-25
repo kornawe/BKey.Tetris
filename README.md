@@ -32,7 +32,9 @@ Prject supports both Windows and Linux
 - Loss detection
 - Automatic Piece falling
 - Smooth animation
-- Sound
+- Colored pieces once placed
+- Sound (Maybe)
+  - Event Bus?
 - Adjustable keybinding
 - App versioning
 - Unit Tests
