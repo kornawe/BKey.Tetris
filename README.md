@@ -30,9 +30,12 @@ Prject supports both Windows and Linux
 
 # Upcoming work
 - Loss detection
+- New game configuration
 - Automatic Piece falling
+- Next piece queue
 - Smooth animation
 - Colored pieces once placed
+- Pause menu
 - Sound (Maybe)
   - Event Bus?
 - Adjustable keybinding
