@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BKey.Tetris.Console.Input;
 
 namespace BKey.Tetris.Console.Menu;
 
 public class MenuItemList : IMenuItem
 {
+    private bool disposedValue;
+
     private List<IMenuItem> Items { get; }
     private int SelectedIndex { get; set; }
 
@@ -18,7 +21,7 @@ public class MenuItemList : IMenuItem
         Down();
     }
 
-    public void Display(bool isActive)
+    public Task Display(bool isActive)
     {
         System.Console.Clear();
         for (var i = 0; i < Items.Count; i++)
@@ -27,14 +30,16 @@ public class MenuItemList : IMenuItem
             item.Display(i == SelectedIndex);
             System.Console.WriteLine();
         }
+        return Task.CompletedTask;
     }
 
-    public void Select()
+    public Task Select()
     {
         if (SelectedIndex >= 0 && SelectedIndex < Items.Count)
         {
             Items[SelectedIndex].Select();
         }
+        return Task.CompletedTask;
     }
 
     public void Up()
@@ -66,31 +71,55 @@ public class MenuItemList : IMenuItem
         // Do Nothing
     }
 
-    public void HandleInput(MenuRequest menuRequest)
+    public async Task HandleInput(MenuRequestType menuRequest)
     {
         switch (menuRequest)
         {
-            case MenuRequest.None:
+            case MenuRequestType.None:
                 break;
-            case MenuRequest.Up:
+            case MenuRequestType.Up:
                 Up();
                 break;
-            case MenuRequest.Down:
+            case MenuRequestType.Down:
                 Down();
                 break;
-            case MenuRequest.Select:
-                Select();
+            case MenuRequestType.Select:
+                await Select();
                 break;
             default:
                 break;
         }
     }
 
-    public void HandleInput(string data)
+    public async Task HandleInput(string data)
     {
         if (SelectedIndex >= 0 && SelectedIndex < Items.Count)
         {
-            Items[SelectedIndex].HandleInput(data);
+            await Items[SelectedIndex].HandleInput(data);
         }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // dispose managed state (managed objects)
+            }
+
+            // free unmanaged resources (unmanaged objects) and override finalizer
+            // set large fields to null
+            Items.Clear();
+            SelectedIndex = -1;
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

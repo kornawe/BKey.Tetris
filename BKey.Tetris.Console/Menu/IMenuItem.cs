@@ -1,17 +1,18 @@
 using System;
+using System.Threading.Tasks;
 using BKey.Tetris.Console.Input;
 
 namespace BKey.Tetris.Console.Menu;
 
-public interface IMenuItem
+public interface IMenuItem : IDisposable
 {
 
     public bool Selectable { get; }
 
-    public void Display(bool isActive);
-    public void Select();
+    public Task Display(bool isActive);
+    public Task Select();
 
-    public void HandleInput(MenuRequest menuRequest);
+    public Task HandleInput(MenuRequestType menuRequest);
 
-    public void HandleInput(string data);
+    public Task HandleInput(string data);
 }

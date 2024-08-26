@@ -1,5 +1,5 @@
 ﻿namespace BKey.Tetris.Console.Input;
-public enum MenuRequest
+public enum MenuRequestType
 {
   None = 0,
   Up,

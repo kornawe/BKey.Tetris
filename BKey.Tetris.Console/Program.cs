@@ -24,20 +24,33 @@ internal class Program
 
     static async Task Main(string[] args)
     {
-        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+        var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
-        var mainMenu = new MenuItemList(new IMenuItem[] {
+        var mainMenuController = new MenuController(menuCancellationSource.Token);
+
+        var mainMenu = new MenuItemList([
             new MenuItemText("Da Shape Game"),
             new MenuItemText(version),
-            new MenuItemAction("New Game", StartNewGame, menuCancellationSource),
-            new MenuItemAction("Quit", QuitGame, menuCancellationSource),
-        });
+            new MenuItemAction("New Game", async () => {
+                    await CreateStartGameMenu(mainMenuController, menuCancellationSource);
+                }),
+            new MenuItemAction("Quit", menuCancellationSource.CancelAsync),
+        ]);
 
-        var mainMenuController = new MenuController(mainMenu, menuCancellationSource.Token);
-
+        mainMenuController.Push(mainMenu);
         await mainMenuController.Run();
 
-        await StartGame();
+    }
+
+    static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource) {
+        menuController.Push(new MenuItemList([
+            new MenuItemText("New Game"),
+            new MenuItemText("Width"),
+            new MenuItemText("Height"),
+            new MenuItemText("Seed"),
+            new MenuItemAction("Start", async () => { await StartGame(); }),
+        ]));
+        return Task.CompletedTask;
     }
 
     static async Task StartGame()
@@ -59,13 +72,4 @@ internal class Program
         await displayTask;
     }
 
-    static private void StartNewGame()
-    {
-
-    }
-
-    static private void QuitGame()
-    {
-        Environment.Exit(0);
-    }
 }

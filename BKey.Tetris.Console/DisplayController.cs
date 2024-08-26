@@ -1,5 +1,4 @@
 ﻿using BKey.Tetris.Logic;
-using BKey.Tetris.Logic.Board;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +17,7 @@ public class DisplayController
         while (!cancellationToken.IsCancellationRequested)
         {
             display.Draw();
-            Thread.Sleep(32);
+            await Task.Delay(32);
         }
     }
 }

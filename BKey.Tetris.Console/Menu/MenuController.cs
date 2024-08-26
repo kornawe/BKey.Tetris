@@ -11,53 +11,84 @@ namespace BKey.Tetris.Console.Menu;
 internal class MenuController : IDisposable
 {
 
-    private IMenuItem MenuItem { get; }
-    private IInputQueue<MenuRequest> MenuInput { get; }
+    private Stack<IMenuItem> MenuStack {get; }
+    private IInputQueue<MenuRequestType> MenuInput { get; }
     private CancellationToken CancellationToken { get; }
     private bool disposedValue;
 
-    static Dictionary<ConsoleKey, MenuRequest> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequest>
+    static Dictionary<ConsoleKey, MenuRequestType> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequestType>
         {
-            { ConsoleKey.UpArrow, MenuRequest.Up},
-            { ConsoleKey.DownArrow, MenuRequest.Down },
-            { ConsoleKey.Enter, MenuRequest.Select },
-            { ConsoleKey.Escape, MenuRequest.Back }
+            { ConsoleKey.UpArrow, MenuRequestType.Up},
+            { ConsoleKey.DownArrow, MenuRequestType.Down },
+            { ConsoleKey.Enter, MenuRequestType.Select },
+            { ConsoleKey.Escape, MenuRequestType.Back }
         };
 
     public MenuController(
-        IMenuItem menuList,
         CancellationToken cancellationToken)
         : this(
-            menuList,
-            new ConsoleInputQueue<MenuRequest>(MenuKeyMappings),
+            new ConsoleInputQueue<MenuRequestType>(MenuKeyMappings),
             cancellationToken)
     {
     }
 
     public MenuController(
-        IMenuItem menuItem,
-        IInputQueue<MenuRequest> menuInput,
+        IInputQueue<MenuRequestType> menuInput,
         CancellationToken cancellationToken)
     {
-        MenuItem = menuItem;
+        MenuStack = new Stack<IMenuItem>();
         MenuInput = menuInput;
         CancellationToken = cancellationToken;
     }
 
+    public void Push(IMenuItem menuItem) {
+        MenuStack.Push(menuItem);
+    }
+
     public async Task Run()
     {
+        if (MenuStack.Count == 0) {
+            return;
+        }
+        var menuItem = MenuStack.Peek();
+        await menuItem.Display(true);
+
         while (!CancellationToken.IsCancellationRequested)
         {
             var menuRequest = MenuInput.Dequeue();
-            if (menuRequest != MenuRequest.None)
+            switch (menuRequest)
             {
-                MenuItem.HandleInput(menuRequest);
-                MenuItem.Display(true);
+                case MenuRequestType.None:
+                    break;
+                case MenuRequestType.Back:
+                    GoBack();
+                    break;
+                default:
+                    ForwardRequest(menuRequest);
+                    break;
             }
 
             await Task.Delay(50);
         }
         MenuInput.Dispose();
+    }
+
+    private void ForwardRequest(MenuRequestType request) {
+        if (MenuStack.Count == 0) {
+            return;
+        }
+        var menuItem = MenuStack.Peek();
+        menuItem.HandleInput(request);
+        menuItem.Display(true);
+    }
+
+    private void GoBack() {
+        if (MenuStack.Count <= 1) {
+            return;
+        }
+        var lastMenuItem = MenuStack.Pop();
+        lastMenuItem.Dispose();
+        MenuStack.Peek().Display(true);
     }
 
     protected virtual void Dispose(bool disposing)
