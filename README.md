@@ -30,6 +30,7 @@ Prject supports both Windows and Linux
 
 # Upcoming work
 - Loss detection
+- Logging
 - New game configuration
 - Automatic Piece falling
 - Next piece queue

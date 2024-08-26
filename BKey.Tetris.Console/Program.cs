@@ -7,6 +7,7 @@ using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console;
@@ -24,11 +25,15 @@ internal class Program
     static async Task Main(string[] args)
     {
         var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-        var mainMenu = new MenuList("Da Shape Game", version);
-        mainMenu.Add(new MenuOption("New Game", StartNewGame));
-        mainMenu.Add(new MenuOption("Quit", QuitGame));
+        var menuCancellationSource = new CancellationTokenSource();
+        var mainMenu = new MenuItemList(new IMenuItem[] {
+            new MenuItemText("Da Shape Game"),
+            new MenuItemText(version),
+            new MenuItemAction("New Game", StartNewGame, menuCancellationSource),
+            new MenuItemAction("Quit", QuitGame, menuCancellationSource),
+        });
 
-        var mainMenuController = new MenuController(mainMenu);
+        var mainMenuController = new MenuController(mainMenu, menuCancellationSource.Token);
 
         await mainMenuController.Run();
 

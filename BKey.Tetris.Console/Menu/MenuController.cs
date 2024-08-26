@@ -4,14 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console.Menu;
 internal class MenuController : IDisposable
 {
 
-    private MenuList MenuList { get; }
+    private IMenuItem MenuItem { get; }
     private IInputQueue<MenuRequest> MenuInput { get; }
+    private CancellationToken CancellationToken { get; }
     private bool disposedValue;
 
     static Dictionary<ConsoleKey, MenuRequest> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequest>
@@ -22,35 +24,35 @@ internal class MenuController : IDisposable
             { ConsoleKey.Escape, MenuRequest.Back }
         };
 
-    public MenuController(MenuList menuList) : this(menuList, new ConsoleInputQueue<MenuRequest>(MenuKeyMappings))
+    public MenuController(
+        IMenuItem menuList,
+        CancellationToken cancellationToken)
+        : this(
+            menuList,
+            new ConsoleInputQueue<MenuRequest>(MenuKeyMappings),
+            cancellationToken)
     {
     }
 
-    public MenuController(MenuList menuList, IInputQueue<MenuRequest> menuInput)
+    public MenuController(
+        IMenuItem menuItem,
+        IInputQueue<MenuRequest> menuInput,
+        CancellationToken cancellationToken)
     {
-        MenuList = menuList;
+        MenuItem = menuItem;
         MenuInput = menuInput;
+        CancellationToken = cancellationToken;
     }
 
     public async Task Run()
     {
-        var keepErGoin = true;
-        while (keepErGoin)
+        while (!CancellationToken.IsCancellationRequested)
         {
-            MenuList.Display();
-
-            switch (MenuInput.Dequeue())
+            var menuRequest = MenuInput.Dequeue();
+            if (menuRequest != MenuRequest.None)
             {
-                case MenuRequest.Up:
-                    MenuList.Up();
-                    break;
-                case MenuRequest.Down:
-                    MenuList.Down();
-                    break;
-                case MenuRequest.Select:
-                    keepErGoin = false;
-                    MenuList.Select();
-                    break;
+                MenuItem.HandleInput(menuRequest);
+                MenuItem.Display(true);
             }
 
             await Task.Delay(50);
