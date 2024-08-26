@@ -33,16 +33,7 @@ public class MenuItemList : IMenuItem
         return Task.CompletedTask;
     }
 
-    public Task Select()
-    {
-        if (SelectedIndex >= 0 && SelectedIndex < Items.Count)
-        {
-            Items[SelectedIndex].Select();
-        }
-        return Task.CompletedTask;
-    }
-
-    public void Up()
+    private void Up()
     {
         for (var i = SelectedIndex - 1; i >= 0; i--)
         {
@@ -54,7 +45,7 @@ public class MenuItemList : IMenuItem
         }
     }
 
-    public void Down()
+    private void Down()
     {
         for (var i = SelectedIndex + 1; i < Items.Count; i++)
         {
@@ -66,27 +57,25 @@ public class MenuItemList : IMenuItem
         }
     }
 
-    public void Back()
+    public async Task HandleInput(MenuRequestEvent menuRequest)
     {
-        // Do Nothing
-    }
-
-    public async Task HandleInput(MenuRequestType menuRequest)
-    {
-        switch (menuRequest)
+        if (SelectedIndex >= 0 && SelectedIndex < Items.Count)
         {
-            case MenuRequestType.None:
-                break;
+            await Items[SelectedIndex].HandleInput(menuRequest);
+        }
+        if (menuRequest.Handled) {
+            return;
+        }
+
+        switch (menuRequest.RequestType)
+        {
             case MenuRequestType.Up:
                 Up();
+                menuRequest.Handle();
                 break;
             case MenuRequestType.Down:
                 Down();
-                break;
-            case MenuRequestType.Select:
-                await Select();
-                break;
-            default:
+                menuRequest.Handle();
                 break;
         }
     }

@@ -23,13 +23,7 @@ public class MenuItemText : IMenuItem
         return Task.CompletedTask;
     }
 
-    public Task Select()
-    {
-        // Do Nothing
-        return Task.CompletedTask;
-    }
-
-    public Task HandleInput(MenuRequestType menuRequest)
+    public Task HandleInput(MenuRequestEvent menuRequest)
     {
         // Do Nothing
         return Task.CompletedTask;

@@ -34,14 +34,15 @@ public class MenuItemAction : IMenuItem
         return Task.CompletedTask;
     }
 
-    public async Task Select()
+    public async Task HandleInput(MenuRequestEvent menuRequest)
     {
-        await Action();
-    }
-
-    public Task HandleInput(MenuRequestType menuRequest)
-    {
-        return Task.CompletedTask;
+        if (menuRequest.Handled) {
+            return;
+        }
+        if (menuRequest.RequestType == MenuRequestType.Select) {
+            menuRequest.Handle();
+            await Action();
+        }
     }
 
     public Task HandleInput(string data)

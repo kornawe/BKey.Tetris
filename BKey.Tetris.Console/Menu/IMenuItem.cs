@@ -10,9 +10,8 @@ public interface IMenuItem : IDisposable
     public bool Selectable { get; }
 
     public Task Display(bool isActive);
-    public Task Select();
 
-    public Task HandleInput(MenuRequestType menuRequest);
+    public Task HandleInput(MenuRequestEvent menuRequest);
 
     public Task HandleInput(string data);
 }

@@ -14,6 +14,7 @@ internal class MenuController : IDisposable
     private Stack<IMenuItem> MenuStack {get; }
     private IInputQueue<MenuRequestType> MenuInput { get; }
     private CancellationToken CancellationToken { get; }
+    private bool IsDirty { get; set; }
     private bool disposedValue;
 
     static Dictionary<ConsoleKey, MenuRequestType> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequestType>
@@ -39,10 +40,12 @@ internal class MenuController : IDisposable
         MenuStack = new Stack<IMenuItem>();
         MenuInput = menuInput;
         CancellationToken = cancellationToken;
+        IsDirty = true;
     }
 
     public void Push(IMenuItem menuItem) {
         MenuStack.Push(menuItem);
+        IsDirty = true;
     }
 
     public async Task Run()
@@ -50,45 +53,57 @@ internal class MenuController : IDisposable
         if (MenuStack.Count == 0) {
             return;
         }
-        var menuItem = MenuStack.Peek();
-        await menuItem.Display(true);
 
         while (!CancellationToken.IsCancellationRequested)
         {
-            var menuRequest = MenuInput.Dequeue();
-            switch (menuRequest)
-            {
-                case MenuRequestType.None:
-                    break;
-                case MenuRequestType.Back:
-                    GoBack();
-                    break;
-                default:
-                    ForwardRequest(menuRequest);
-                    break;
+            if (IsDirty && MenuStack.Count > 0) {
+                await MenuStack.Peek().Display(true);
+                IsDirty = false;
             }
 
-            await Task.Delay(50);
+            var request = MenuInput.Dequeue();
+            if (request == MenuRequestType.None)
+            {
+                await Task.Delay(50);
+                continue;
+            }
+
+            var menuRequest = await ForwardRequest(request);
+            if (!menuRequest.Handled) {
+                switch (request)
+                {
+                    case MenuRequestType.Back:
+                        await GoBack();
+                        break;
+                }
+            }
+
         }
         MenuInput.Dispose();
     }
 
-    private void ForwardRequest(MenuRequestType request) {
+    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestType request) {
+        var menuRequest = new MenuRequestEvent(request);
+
         if (MenuStack.Count == 0) {
-            return;
+            return menuRequest;
         }
         var menuItem = MenuStack.Peek();
-        menuItem.HandleInput(request);
-        menuItem.Display(true);
+        await menuItem.HandleInput(menuRequest);
+        if (menuRequest.Handled)
+        {
+            IsDirty = true;
+        }
+        return menuRequest;
     }
 
-    private void GoBack() {
+    private async Task GoBack() {
         if (MenuStack.Count <= 1) {
             return;
         }
         var lastMenuItem = MenuStack.Pop();
         lastMenuItem.Dispose();
-        MenuStack.Peek().Display(true);
+        await MenuStack.Peek().Display(true);
     }
 
     protected virtual void Dispose(bool disposing)
