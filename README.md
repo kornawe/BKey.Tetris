@@ -3,9 +3,9 @@ A game to practice some dev skills.
 
 # Building the Project
 
-Prject supports both Windows and Linux
+Project supports both Windows and Linux
 
-## Prerequisits
+## Prerequisites
 
 - .Net 8.0 SDK
   - https://dotnet.microsoft.com/en-us/download/dotnet/8.0
@@ -13,7 +13,7 @@ Prject supports both Windows and Linux
 ## Visual Studio
 
 1. Open the .sln
-2. Set the startup project to BKey.Tetirs.Console
+2. Set the startup project to BKey.Tetris.Console
 3. Build
 4. Debug
 
@@ -30,6 +30,7 @@ Prject supports both Windows and Linux
 
 # Upcoming work
 - Loss detection
+  - Fix locking in BoardBuffer
 - Logging
 - New game configuration
 - Automatic Piece falling
