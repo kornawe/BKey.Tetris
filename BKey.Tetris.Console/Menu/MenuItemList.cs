@@ -39,7 +39,7 @@ public class MenuItemList : IMenuItem
 
     public void Up()
     {
-        for (var i = SelectedIndex + 1; i < Items.Count; i++)
+        for (var i = SelectedIndex - 1; i >= 0; i--)
         {
             if (Items[i].Selectable)
             {
@@ -51,7 +51,7 @@ public class MenuItemList : IMenuItem
 
     public void Down()
     {
-        for (var i = SelectedIndex - 1; i >= 0; i--)
+        for (var i = SelectedIndex + 1; i < Items.Count; i++)
         {
             if (Items[i].Selectable)
             {
