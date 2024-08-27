@@ -2,6 +2,7 @@
 using BKey.Tetris.Console.Menu;
 using BKey.Tetris.Logic;
 using BKey.Tetris.Logic.Board;
+using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
@@ -24,32 +25,9 @@ internal class Program
 
     static async Task Main(string[] args)
     {
-        var keyListener = new KeyListener();
+        var eventBus = new SimpleEventBus();
+        var keyListener = new KeyListener(eventBus);
         var listenTask = keyListener.StartListeningAsync();
-
-        var runner = Task.Run(() =>
-        {
-            foreach (var keyEvent in keyListener.GetEvents())
-            {
-                System.Console.WriteLine($"{keyEvent.Timestamp}: {keyEvent.EventType} - {keyEvent.Key}");
-            }
-        });
-
-        System.Console.WriteLine("Press 'Q' to stop listening.");
-
-        while (true)
-        {
-            if (System.Console.KeyAvailable && System.Console.ReadKey(intercept: true).Key == ConsoleKey.Q)
-            {
-                keyListener.StopListening();
-                break;
-            }
-            await Task.Delay(100);
-        }
-        System.Console.WriteLine("Key listening stopping.");
-        await runner;
-        System.Console.WriteLine("Key listening stopped.");
-        return;
 
         var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
@@ -69,7 +47,8 @@ internal class Program
 
     }
 
-    static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource) {
+    static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource)
+    {
         menuController.Push(new MenuItemList([
             new MenuItemText("New Game"),
             new MenuItemText("Width"),

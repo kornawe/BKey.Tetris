@@ -2,8 +2,6 @@
 using BKey.Tetris.Logic.Input;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +9,7 @@ namespace BKey.Tetris.Console.Menu;
 internal class MenuController : IDisposable
 {
 
-    private Stack<IMenuItem> MenuStack {get; }
+    private Stack<IMenuItem> MenuStack { get; }
     private IInputQueue<MenuRequestType> MenuInput { get; }
     private CancellationToken CancellationToken { get; }
     private bool IsDirty { get; set; }
@@ -43,20 +41,23 @@ internal class MenuController : IDisposable
         IsDirty = true;
     }
 
-    public void Push(IMenuItem menuItem) {
+    public void Push(IMenuItem menuItem)
+    {
         MenuStack.Push(menuItem);
         IsDirty = true;
     }
 
     public async Task Run()
     {
-        if (MenuStack.Count == 0) {
+        if (MenuStack.Count == 0)
+        {
             return;
         }
 
         while (!CancellationToken.IsCancellationRequested)
         {
-            if (IsDirty && MenuStack.Count > 0) {
+            if (IsDirty && MenuStack.Count > 0)
+            {
                 await MenuStack.Peek().Display(true);
                 IsDirty = false;
             }
@@ -69,7 +70,8 @@ internal class MenuController : IDisposable
             }
 
             var menuRequest = await ForwardRequest(request);
-            if (!menuRequest.Handled) {
+            if (!menuRequest.Handled)
+            {
                 switch (request)
                 {
                     case MenuRequestType.Back:
@@ -82,10 +84,12 @@ internal class MenuController : IDisposable
         MenuInput.Dispose();
     }
 
-    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestType request) {
+    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestType request)
+    {
         var menuRequest = new MenuRequestEvent(request);
 
-        if (MenuStack.Count == 0) {
+        if (MenuStack.Count == 0)
+        {
             return menuRequest;
         }
         var menuItem = MenuStack.Peek();
@@ -97,8 +101,10 @@ internal class MenuController : IDisposable
         return menuRequest;
     }
 
-    private async Task GoBack() {
-        if (MenuStack.Count <= 1) {
+    private async Task GoBack()
+    {
+        if (MenuStack.Count <= 1)
+        {
             return;
         }
         var lastMenuItem = MenuStack.Pop();
