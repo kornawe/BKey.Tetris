@@ -55,8 +55,8 @@ internal class Program
     {
         menuController.Push(new MenuItemList([
             new MenuItemText("New Game"),
-            new MenuItemText("Width"),
-            new MenuItemText("Height"),
+            new MenuItemInputInt("Width", 6, 80, 2, 10),
+            new MenuItemInputInt("Height", 10, 40, 2, 20),
             new MenuItemText("Seed"),
             new MenuItemAction("Start", async () => { await StartGame(); }),
         ]));

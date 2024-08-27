@@ -18,7 +18,9 @@ public class MenuRequestKeyAdapter : IDisposable
             { ConsoleKey.UpArrow, MenuRequestType.Up},
             { ConsoleKey.DownArrow, MenuRequestType.Down },
             { ConsoleKey.Enter, MenuRequestType.Select },
-            { ConsoleKey.Escape, MenuRequestType.Back }
+            { ConsoleKey.RightArrow, MenuRequestType.Select },
+            { ConsoleKey.Escape, MenuRequestType.Back },
+            { ConsoleKey.LeftArrow, MenuRequestType.Back },
         };
 
     private bool disposedValue;
