@@ -6,23 +6,21 @@ using BKey.Tetris.Logic.Events;
 
 namespace BKey.Tetris.Console.Input;
 
-public class KeyListener
+public class KeyListener : IDisposable
 {
-    private IEventBus EventBus { get; }
     private readonly HashSet<ConsoleKey> _pressedKeys;
-    private CancellationTokenSource? _cancellationTokenSource;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private bool disposedValue;
 
-    public KeyListener(IEventBus eventBus)
+    public KeyListener()
     {
-        EventBus = eventBus;
         _pressedKeys = new HashSet<ConsoleKey>();
+        _cancellationTokenSource = new CancellationTokenSource();
     }
 
-    public Task StartListeningAsync()
+    public KeyListener Attach(IEventBus eventBus)
     {
-        _cancellationTokenSource = new CancellationTokenSource();
-
-        return Task.Run(async () =>
+        Task.Run(async () =>
         {
             while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
@@ -37,7 +35,7 @@ public class KeyListener
                 if (!_pressedKeys.Contains(keyInfo.Key))
                 {
                     _pressedKeys.Add(keyInfo.Key);
-                    EventBus.Publish(new KeyPressEvent(keyInfo));
+                    eventBus.Publish(new KeyPressEvent(keyInfo));
                 }
 
                 // Handle KeyUp event
@@ -53,11 +51,29 @@ public class KeyListener
 
             _pressedKeys.Clear();
         }, _cancellationTokenSource.Token);
+        return this;
     }
 
-    public void StopListening()
+    protected virtual void Dispose(bool disposing)
     {
-        _cancellationTokenSource?.Cancel();
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // dispose managed state (managed objects)
+                _cancellationTokenSource?.Cancel();
+            }
+
+            // free unmanaged resources (unmanaged objects) and override finalizer
+            // set large fields to null
+            disposedValue = true;
+        }
     }
 
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

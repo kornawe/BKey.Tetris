@@ -1,5 +1,5 @@
 ﻿using BKey.Tetris.Console.Input;
-using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,35 +9,25 @@ namespace BKey.Tetris.Console.Menu;
 internal class MenuController : IDisposable
 {
 
-    private Stack<IMenuItem> MenuStack { get; }
-    private IInputQueue<MenuRequestType> MenuInput { get; }
     private CancellationToken CancellationToken { get; }
+
+    private Stack<IMenuItem> MenuStack { get; }
+    private MenuRequestKeyAdapter RequestKeyAdapter { get; }
+
+    private IEventQueue<MenuRequestEvent> MenuRequestEventQueue { get; }
     private bool IsDirty { get; set; }
     private bool disposedValue;
 
-    static Dictionary<ConsoleKey, MenuRequestType> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequestType>
-        {
-            { ConsoleKey.UpArrow, MenuRequestType.Up},
-            { ConsoleKey.DownArrow, MenuRequestType.Down },
-            { ConsoleKey.Enter, MenuRequestType.Select },
-            { ConsoleKey.Escape, MenuRequestType.Back }
-        };
-
     public MenuController(
-        CancellationToken cancellationToken)
-        : this(
-            new ConsoleInputQueue<MenuRequestType>(MenuKeyMappings),
-            cancellationToken)
-    {
-    }
-
-    public MenuController(
-        IInputQueue<MenuRequestType> menuInput,
+        IEventBus eventBus,
         CancellationToken cancellationToken)
     {
         MenuStack = new Stack<IMenuItem>();
-        MenuInput = menuInput;
         CancellationToken = cancellationToken;
+        RequestKeyAdapter = new MenuRequestKeyAdapter(eventBus);
+        MenuRequestEventQueue = new EventQueue<MenuRequestEvent>(eventBus);
+
+        // Mark dirty so the first pass causes a redraw.
         IsDirty = true;
     }
 
@@ -62,17 +52,19 @@ internal class MenuController : IDisposable
                 IsDirty = false;
             }
 
-            var request = MenuInput.Dequeue();
-            if (request == MenuRequestType.None)
+            var requests = MenuRequestEventQueue.DequeueAll();
+            if (requests.Length == 0)
             {
                 await Task.Delay(50);
                 continue;
             }
 
+            var request = requests[requests.Length - 1];
+
             var menuRequest = await ForwardRequest(request);
             if (!menuRequest.Handled)
             {
-                switch (request)
+                switch (request.RequestType)
                 {
                     case MenuRequestType.Back:
                         await GoBack();
@@ -81,24 +73,23 @@ internal class MenuController : IDisposable
             }
 
         }
-        MenuInput.Dispose();
+        MenuRequestEventQueue.Dispose();
     }
 
-    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestType request)
+    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestEvent request)
     {
-        var menuRequest = new MenuRequestEvent(request);
 
         if (MenuStack.Count == 0)
         {
-            return menuRequest;
+            return request;
         }
         var menuItem = MenuStack.Peek();
-        await menuItem.HandleInput(menuRequest);
-        if (menuRequest.Handled)
+        await menuItem.HandleInput(request);
+        if (request.Handled)
         {
             IsDirty = true;
         }
-        return menuRequest;
+        return request;
     }
 
     private async Task GoBack()
@@ -109,7 +100,7 @@ internal class MenuController : IDisposable
         }
         var lastMenuItem = MenuStack.Pop();
         lastMenuItem.Dispose();
-        await MenuStack.Peek().Display(true);
+        IsDirty = true;
     }
 
     protected virtual void Dispose(bool disposing)
@@ -119,7 +110,8 @@ internal class MenuController : IDisposable
             if (disposing)
             {
                 // dispose managed state (managed objects)
-                MenuInput.Dispose();
+                MenuRequestEventQueue.Dispose();
+                RequestKeyAdapter.Dispose();
             }
 
             // free unmanaged resources (unmanaged objects) and override finalizer

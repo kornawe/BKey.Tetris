@@ -23,15 +23,20 @@ internal class Program
             { ConsoleKey.DownArrow, MovementRequest.Down }
         };
 
+    private static IEventBus EventBus { get; }
+
+    static Program()
+    {
+        EventBus = new SimpleEventBus();
+    }
+
     static async Task Main(string[] args)
     {
-        var eventBus = new SimpleEventBus();
-        var keyListener = new KeyListener(eventBus);
-        var listenTask = keyListener.StartListeningAsync();
+        using var keyListener = new KeyListener().Attach(EventBus);
 
         var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
-        var mainMenuController = new MenuController(menuCancellationSource.Token);
+        var mainMenuController = new MenuController(EventBus, menuCancellationSource.Token);
 
         var mainMenu = new MenuItemList([
             new MenuItemText("Da Shape Game"),
@@ -44,7 +49,6 @@ internal class Program
 
         mainMenuController.Push(mainMenu);
         await mainMenuController.Run();
-
     }
 
     static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource)
@@ -67,7 +71,8 @@ internal class Program
         var boardBuffer = new BoardBuffer(board);
         IGameDisplay display = new ConsoleDisplay(boardBuffer, score);
         ITetriminoFactory factory = new TetriminoFactory(random);
-        using var inputQueue = new ConsoleInputQueue<MovementRequest>(GameKeyMappings);
+        using var movementKeyAdapter = new MovementRequestKeyAdapter(EventBus);
+        using var inputQueue = new EventQueue<MovementRequestEvent>(EventBus);
         var game = new GameController(boardBuffer, factory, inputQueue, score);
         var displayController = new DisplayController(display);
 

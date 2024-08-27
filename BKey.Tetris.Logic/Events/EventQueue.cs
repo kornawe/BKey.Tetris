@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BKey.Tetris.Logic.Events;
 
-public class EventQueue<T> : IDisposable where T : class
+public class EventQueue<T> : IEventQueue<T> where T : class
 {
 
     private IEventBus EventBus { get; }
@@ -26,14 +26,16 @@ public class EventQueue<T> : IDisposable where T : class
         }
     }
 
-    public T Dequeue() {
+    public T Dequeue()
+    {
         lock (Items)
         {
             return Items.Dequeue();
         }
     }
 
-    public T[] DequeueAll() {
+    public T[] DequeueAll()
+    {
         lock (Items)
         {
             var results = new T[Items.Count];

@@ -6,9 +6,12 @@ using BKey.Tetris.Logic.Events;
 
 namespace BKey.Tetris.Console.Menu;
 
-public class MenuRequestKeyAdapter
+/// <summary>
+/// Listens for <see cref="KeyPressEvent"/> and publishes <see cref="MenuRequestEvent"/>s.
+/// </summary>
+public class MenuRequestKeyAdapter : IDisposable
 {
-    private IEventBus EventBus { get; }
+    private KeyEventAdapter<MenuRequestType, MenuRequestEvent> KeyEventAdapter { get; }
 
     static Dictionary<ConsoleKey, MenuRequestType> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequestType>
         {
@@ -18,18 +21,42 @@ public class MenuRequestKeyAdapter
             { ConsoleKey.Escape, MenuRequestType.Back }
         };
 
+    private bool disposedValue;
+
     public MenuRequestKeyAdapter(IEventBus eventBus)
     {
-        EventBus = eventBus;
-        EventBus.Subscribe<KeyPressEvent>(HandleKeyPress);
+        KeyEventAdapter = new KeyEventAdapter<MenuRequestType, MenuRequestEvent>(
+            eventBus,
+            MenuKeyMappings,
+            CreateMenuEvent
+            );
     }
 
-    private void HandleKeyPress(KeyPressEvent keyPressEvent)
+    private static MenuRequestEvent CreateMenuEvent(MenuRequestType menuRequestType)
     {
-        if (MenuKeyMappings.TryGetValue(keyPressEvent.KeyInfo.Key, out MenuRequestType movementRequest))
+        return new MenuRequestEvent(menuRequestType);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
         {
-            var menuRequestEvent = new MenuRequestEvent(movementRequest);
-            EventBus.Publish(menuRequestEvent);
+            if (disposing)
+            {
+                // dispose managed state (managed objects)
+                KeyEventAdapter.Dispose();
+            }
+
+            // free unmanaged resources (unmanaged objects) and override finalizer
+            // set large fields to null
+            disposedValue = true;
         }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

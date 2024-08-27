@@ -11,7 +11,7 @@ public class SimpleEventBus : IEventBus
 
     public void Subscribe<T>(Action<T> handler) where T : class
     {
-        if (handler == null) throw new ArgumentNullException(nameof(handler));
+        ArgumentNullException.ThrowIfNull(handler);
 
         if (!_handlers.TryGetValue(typeof(T), out var handlers))
         {
@@ -38,7 +38,7 @@ public class SimpleEventBus : IEventBus
 
     public void Publish<T>(T eventMessage) where T : class
     {
-        if (eventMessage == null) throw new ArgumentNullException(nameof(eventMessage));
+        ArgumentNullException.ThrowIfNull(eventMessage);
 
         if (_handlers.TryGetValue(eventMessage.GetType(), out var handlers))
         {
