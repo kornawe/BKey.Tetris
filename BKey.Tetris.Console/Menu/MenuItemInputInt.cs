@@ -55,7 +55,7 @@ public class MenuItemInputInt : IMenuItem
         switch (menuRequest.RequestType)
         {
             case MenuRequestType.Select:
-                IsSelected = true;
+                IsSelected = !IsSelected;
                 menuRequest.Handle();
                 break;
             case MenuRequestType.Up:
