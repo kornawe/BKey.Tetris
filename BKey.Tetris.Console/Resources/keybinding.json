@@ -1,16 +1,15 @@
-
 {
-  "MenuMapping": {
-    "Up": "UpArrow",
-    "Down": "DownArrow",
-    "Select": "Enter,RightArrow",
-    "Back": "Escape,LeftArrow"
+  "Menu": {
+    "Up": ["UpArrow"],
+    "Down": ["DownArrow"],
+    "Select": ["Enter", "RightArrow"],
+    "Back": ["Escape", "LeftArrow"]
   },
-  "MovementMapping": {
-    "Left": "LeftArrow",
-    "Right": "RightArrow",
-    "Rotate": "UpArrow",
-    "Down": "DownArrow",
-    "Pause": "Escape"
+  "Movement": {
+    "Left": ["LeftArrow"],
+    "Right": ["RightArrow"],
+    "Rotate": ["UpArrow"],
+    "Down": ["DownArrow"],
+    "Pause": ["Escape"]
   }
 }

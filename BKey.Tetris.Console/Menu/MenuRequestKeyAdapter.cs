@@ -13,23 +13,15 @@ public class MenuRequestKeyAdapter : IDisposable
 {
     private KeyEventAdapter<MenuRequestType, MenuRequestEvent> KeyEventAdapter { get; }
 
-    static Dictionary<ConsoleKey, MenuRequestType> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequestType>
-        {
-            { ConsoleKey.UpArrow, MenuRequestType.Up},
-            { ConsoleKey.DownArrow, MenuRequestType.Down },
-            { ConsoleKey.Enter, MenuRequestType.Select },
-            { ConsoleKey.RightArrow, MenuRequestType.Select },
-            { ConsoleKey.Escape, MenuRequestType.Back },
-            { ConsoleKey.LeftArrow, MenuRequestType.Back },
-        };
-
     private bool disposedValue;
 
-    public MenuRequestKeyAdapter(IEventBus eventBus)
+    public MenuRequestKeyAdapter(
+        IEventBus eventBus,
+        IReadOnlyDictionary<ConsoleKey, MenuRequestType> keybinding)
     {
         KeyEventAdapter = new KeyEventAdapter<MenuRequestType, MenuRequestEvent>(
             eventBus,
-            MenuKeyMappings,
+            keybinding,
             CreateMenuEvent
             );
     }

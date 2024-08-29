@@ -36,7 +36,8 @@ internal class Program
 
         var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
-        var mainMenuController = new MenuController(EventBus, menuCancellationSource.Token);
+        var keyBindingProvider = new KeyBindingProvider();
+        var mainMenuController = new MenuController(EventBus, keyBindingProvider, menuCancellationSource.Token);
 
         var mainMenu = new MenuItemList([
             new MenuItemText("Da Shape Game"),

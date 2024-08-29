@@ -20,11 +20,12 @@ internal class MenuController : IDisposable
 
     public MenuController(
         IEventBus eventBus,
+        IKeyBindingProvider keyBindingProvider,
         CancellationToken cancellationToken)
     {
         MenuStack = new Stack<IMenuItem>();
         CancellationToken = cancellationToken;
-        RequestKeyAdapter = new MenuRequestKeyAdapter(eventBus);
+        RequestKeyAdapter = new MenuRequestKeyAdapter(eventBus, keyBindingProvider.GetBinding<MenuRequestType>());
         MenuRequestEventQueue = new EventQueue<MenuRequestEvent>(eventBus);
 
         // Mark dirty so the first pass causes a redraw.

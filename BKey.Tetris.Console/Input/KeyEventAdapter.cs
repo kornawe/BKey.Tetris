@@ -1,11 +1,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using BKey.Tetris.Logic.Events;
 
 namespace BKey.Tetris.Console.Input;
 
-public class KeyEventAdapter<TRequest, TEvent> : IDisposable where TEvent : class
+public class KeyEventAdapter<TRequest, TEvent> : IDisposable where TEvent : class where TRequest : struct, Enum
 {
     private IEventBus EventBus { get; }
     private Func<TRequest, TEvent> EventFactory { get; }
