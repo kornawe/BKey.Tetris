@@ -1,0 +1,16 @@
+
+{
+  "MenuMapping": {
+    "Up": "UpArrow",
+    "Down": "DownArrow",
+    "Select": "Enter,RightArrow",
+    "Back": "Escape,LeftArrow"
+  },
+  "MovementMapping": {
+    "Left": "LeftArrow",
+    "Right": "RightArrow",
+    "Rotate": "UpArrow",
+    "Down": "DownArrow",
+    "Pause": "Escape"
+  }
+}

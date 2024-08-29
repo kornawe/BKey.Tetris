@@ -12,4 +12,9 @@
     <ProjectReference Include="..\BKey.Tetris.Logic\BKey.Tetris.Logic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+
 </Project>
