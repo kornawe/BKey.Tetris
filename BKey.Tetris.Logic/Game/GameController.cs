@@ -57,6 +57,8 @@ public class GameController : IGameController
                 case GameState.Render:
                     Render();
                     break;
+                case GameState.GameOver:
+                    break;
             }
 
             await Task.Delay(10);
@@ -137,7 +139,10 @@ public class GameController : IGameController
         {
             // Spawn a new Tetrimino and place it on the board
             board.AddTetrmino(TetriminoFactory.Next());
-
+            if (!board.CanMove(None, None)) {
+                CurrentState = GameState.GameOver;
+                return;
+            }
         }
 
         // Move to the render state

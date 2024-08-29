@@ -5,5 +5,6 @@ internal enum GameState
     Commit,
     LineClear,
     NewPieceSpawn,
-    Render
+    Render,
+    GameOver,
 }
