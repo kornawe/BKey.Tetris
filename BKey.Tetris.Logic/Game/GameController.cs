@@ -2,6 +2,7 @@
 using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
@@ -35,9 +36,9 @@ public class GameController : IGameController
         Score = score;
     }
 
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken)
     {
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             switch (CurrentState)
             {
