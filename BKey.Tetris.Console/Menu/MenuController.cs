@@ -68,7 +68,7 @@ public class MenuController : IDisposable
                 switch (request.RequestType)
                 {
                     case MenuRequestType.Back:
-                        Back();
+                        await Back();
                         break;
                 }
             }
