@@ -5,6 +5,7 @@ using BKey.Tetris.Logic.Board;
 using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Settings;
 using BKey.Tetris.Logic.Tetrimino;
 using System;
 using System.Collections.Generic;
@@ -58,18 +59,26 @@ internal class Program
 
         menuController.Push(new MenuItemList([
             new MenuItemText("New Game"),
-            new MenuItemInputInt("Width", 6, 80, 2, 10),
-            new MenuItemInputInt("Height", 10, 40, 2, 20),
-            new MenuItemText("Seed"),
-            new MenuItemAction("Start", async () => { await StartGame(); }),
+            new MenuItemInputInt(
+                "Width",
+                new SettingProvider<BoardCreateOptions, int>(settings.BoardCreateOptions, s => s.Width)),
+            new MenuItemInputInt(
+                "Height",
+                new SettingProvider<BoardCreateOptions, int>(settings.BoardCreateOptions, s => s.Height)),
+            new MenuItemInputInt(
+                "Seed",
+                new SettingProvider<NewGameSettings, int>(settings, s => s.Seed)),
+            new MenuItemAction("Start", async () => { await StartGame(settings); }),
+            new MenuItemBack(menuController),
         ]));
         return Task.CompletedTask;
     }
 
-    static async Task StartGame()
+    static async Task StartGame(NewGameSettings newGameSettings)
     {
-        var random = new Random();
-        IBoard board = new Board(10, 20);
+        var random = new Random(newGameSettings.Seed);
+        var boardFactory = new BoardFactory();
+        var board = boardFactory.Create(newGameSettings.BoardCreateOptions);
         var score = new GameScore();
         var boardBuffer = new BoardBuffer(board);
         IGameDisplay display = new ConsoleDisplay(boardBuffer, score);

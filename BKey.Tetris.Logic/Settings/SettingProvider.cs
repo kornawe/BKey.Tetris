@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace BKey.Tetris.Logic.Settings;
 
-public class SettingProvider<TSettings, TValue> : ISettingProvider<TValue>
+public class SettingProvider<TSettings, TValue> : ISettingProvider<TValue> where TSettings : notnull
 {
     private readonly TSettings _settings;
     private readonly Func<TSettings, TValue> _getter;
@@ -26,19 +27,23 @@ public class SettingProvider<TSettings, TValue> : ISettingProvider<TValue>
 
     public string PropertyName { get; }
 
-    public int Get()
+    public TValue Get()
     {
         return _getter(_settings);
     }
 
-    public void Set(int value)
+    public TValue Set(TValue value)
     {
         // Validate the value using DataAnnotations
         var context = new ValidationContext(_settings) { MemberName = PropertyName };
-        Validator.ValidateProperty(value, context);
+        var validationResults = new List<ValidationResult>();
+        if (Validator.TryValidateProperty(value, context, validationResults))
+        {
+            // If validation passes, set the value
+            _setter(_settings, value);
+        }
 
-        // If validation passes, set the value
-        _setter(_settings, value);
+        return Get();
     }
 
     private static Action<TSettings, TValue> CreateSetter(Expression<Func<TSettings, TValue>> propertyExpression)

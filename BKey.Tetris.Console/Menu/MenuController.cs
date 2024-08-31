@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console.Menu;
-internal class MenuController : IDisposable
+public class MenuController : IDisposable
 {
 
     private CancellationToken CancellationToken { get; }
@@ -68,7 +68,7 @@ internal class MenuController : IDisposable
                 switch (request.RequestType)
                 {
                     case MenuRequestType.Back:
-                        GoBack();
+                        Back();
                         break;
                 }
             }
@@ -93,15 +93,16 @@ internal class MenuController : IDisposable
         return request;
     }
 
-    private void GoBack()
+    public Task Back()
     {
         if (MenuStack.Count <= 1)
         {
-            return;
+            return Task.CompletedTask;
         }
         var lastMenuItem = MenuStack.Pop();
         lastMenuItem.Dispose();
         IsDirty = true;
+        return Task.CompletedTask;
     }
 
     protected virtual void Dispose(bool disposing)
