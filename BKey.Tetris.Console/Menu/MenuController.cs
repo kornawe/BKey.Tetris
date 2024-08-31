@@ -67,7 +67,7 @@ internal class MenuController : IDisposable
                 switch (request.RequestType)
                 {
                     case MenuRequestType.Back:
-                        await GoBack();
+                        GoBack();
                         break;
                 }
             }
@@ -92,7 +92,7 @@ internal class MenuController : IDisposable
         return request;
     }
 
-    private async Task GoBack()
+    private void GoBack()
     {
         if (MenuStack.Count <= 1)
         {

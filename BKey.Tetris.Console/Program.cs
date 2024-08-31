@@ -53,6 +53,8 @@ internal class Program
 
     static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource)
     {
+        var settings = new NewGameSettings();
+
         menuController.Push(new MenuItemList([
             new MenuItemText("New Game"),
             new MenuItemInputInt("Width", 6, 80, 2, 10),
