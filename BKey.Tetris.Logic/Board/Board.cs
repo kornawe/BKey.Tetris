@@ -165,7 +165,7 @@ public class Board : IBoard, IReadonlyBoard
         CurrentTetrimino = null;
     }
 
-    private int[,] RotateShape(int[,] shape)
+    private static int[,] RotateShape(int[,] shape)
     {
         int rowCount = shape.GetLength(0);
         int colCount = shape.GetLength(1);

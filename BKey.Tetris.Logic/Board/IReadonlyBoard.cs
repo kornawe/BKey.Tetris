@@ -10,5 +10,5 @@ public interface IReadonlyBoard
     public bool[,] Cells { get; }
 
     // TODO make readonly
-    public TetriminoPiece CurrentTetrimino { get; }
+    public TetriminoPiece? CurrentTetrimino { get; }
 }

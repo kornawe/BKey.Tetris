@@ -5,5 +5,6 @@ public enum MovementRequest
     Left,
     Right,
     Rotate,
-    Down
+    Down,
+    Pause,
 }

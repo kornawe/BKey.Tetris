@@ -2,6 +2,7 @@
 using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
@@ -35,9 +36,9 @@ public class GameController : IGameController
         Score = score;
     }
 
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken)
     {
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             switch (CurrentState)
             {
@@ -55,6 +56,8 @@ public class GameController : IGameController
                     break;
                 case GameState.Render:
                     Render();
+                    break;
+                case GameState.GameOver:
                     break;
             }
 
@@ -136,7 +139,10 @@ public class GameController : IGameController
         {
             // Spawn a new Tetrimino and place it on the board
             board.AddTetrmino(TetriminoFactory.Next());
-
+            if (!board.CanMove(None, None)) {
+                CurrentState = GameState.GameOver;
+                return;
+            }
         }
 
         // Move to the render state

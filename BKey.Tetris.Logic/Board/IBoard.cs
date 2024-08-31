@@ -8,7 +8,7 @@ public interface IBoard
 
     public bool[,] Cells { get; }
 
-    public TetriminoPiece CurrentTetrimino { get; }
+    public TetriminoPiece? CurrentTetrimino { get; }
 
     public void AddTetrmino(TetriminoPiece piece);
 

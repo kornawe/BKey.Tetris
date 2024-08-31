@@ -36,7 +36,8 @@ internal class Program
 
         var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
-        var mainMenuController = new MenuController(EventBus, menuCancellationSource.Token);
+        var keyBindingProvider = new KeyBindingProvider();
+        var mainMenuController = new MenuController(EventBus, keyBindingProvider, menuCancellationSource.Token);
 
         var mainMenu = new MenuItemList([
             new MenuItemText("Da Shape Game"),
@@ -78,8 +79,10 @@ internal class Program
         var game = new GameController(boardBuffer, factory, inputQueue, score);
         var displayController = new DisplayController(display);
 
-        var gameTask = game.Run();
-        var displayTask = displayController.RunDisplayLoop(new System.Threading.CancellationToken());
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        var gameTask = game.Run(cancellationTokenSource.Token);
+        var displayTask = displayController.RunDisplayLoop(cancellationTokenSource.Token);
 
         await gameTask;
         await displayTask;
