@@ -5,10 +5,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BKey.Tetris.Logic\BKey.Tetris.Logic.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 
 </Project>

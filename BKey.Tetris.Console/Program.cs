@@ -2,11 +2,14 @@
 using BKey.Tetris.Console.Menu;
 using BKey.Tetris.Logic;
 using BKey.Tetris.Logic.Board;
+using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Settings;
 using BKey.Tetris.Logic.Tetrimino;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console;
@@ -21,45 +24,77 @@ internal class Program
             { ConsoleKey.DownArrow, MovementRequest.Down }
         };
 
-    static async Task Main(string[] args)
+    private static IEventBus EventBus { get; }
+
+    static Program()
     {
-        var mainMenu = new MenuList("Da Shape Game", "0.0.1");
-        mainMenu.Add(new MenuOption("New Game", StartNewGame));
-        mainMenu.Add(new MenuOption("Quit", QuitGame));
-
-        var mainMenuController = new MenuController(mainMenu);
-
-        await mainMenuController.Run();
-
-        await StartGame();
+        EventBus = new SimpleEventBus();
     }
 
-    static async Task StartGame()
+    static async Task Main(string[] args)
     {
-        var random = new Random();
-        IBoard board = new Board(10, 20);
+        using var keyListener = new KeyListener().Attach(EventBus);
+
+        var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
+        var menuCancellationSource = new CancellationTokenSource();
+        var keyBindingProvider = new KeyBindingProvider();
+        var mainMenuController = new MenuController(EventBus, keyBindingProvider, menuCancellationSource.Token);
+
+        var mainMenu = new MenuItemList([
+            new MenuItemText("Da Shape Game"),
+            new MenuItemText(version),
+            new MenuItemAction("New Game", async () => {
+                    await CreateStartGameMenu(mainMenuController, menuCancellationSource);
+                }),
+            new MenuItemAction("Quit", menuCancellationSource.CancelAsync),
+        ]);
+
+        mainMenuController.Push(mainMenu);
+        await mainMenuController.Run();
+    }
+
+    static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource)
+    {
+        var settings = new NewGameSettings();
+
+        menuController.Push(new MenuItemList([
+            new MenuItemText("New Game"),
+            new MenuItemInputInt(
+                "Width",
+                new SettingProvider<BoardCreateOptions, int>(settings.BoardCreateOptions, s => s.Width)),
+            new MenuItemInputInt(
+                "Height",
+                new SettingProvider<BoardCreateOptions, int>(settings.BoardCreateOptions, s => s.Height)),
+            new MenuItemInputInt(
+                "Seed",
+                new SettingProvider<NewGameSettings, int>(settings, s => s.Seed)),
+            new MenuItemAction("Start", async () => { await StartGame(settings); }),
+            new MenuItemBack(menuController),
+        ]));
+        return Task.CompletedTask;
+    }
+
+    static async Task StartGame(NewGameSettings newGameSettings)
+    {
+        var random = new Random(newGameSettings.Seed);
+        var boardFactory = new BoardFactory();
+        var board = boardFactory.Create(newGameSettings.BoardCreateOptions);
         var score = new GameScore();
         var boardBuffer = new BoardBuffer(board);
         IGameDisplay display = new ConsoleDisplay(boardBuffer, score);
         ITetriminoFactory factory = new TetriminoFactory(random);
-        using var inputQueue = new ConsoleInputQueue<MovementRequest>(GameKeyMappings);
+        using var movementKeyAdapter = new MovementRequestKeyAdapter(EventBus);
+        using var inputQueue = new EventQueue<MovementRequestEvent>(EventBus);
         var game = new GameController(boardBuffer, factory, inputQueue, score);
         var displayController = new DisplayController(display);
 
-        var gameTask = game.Run();
-        var displayTask = displayController.RunDisplayLoop(new System.Threading.CancellationToken());
+        var cancellationTokenSource = new CancellationTokenSource();
+
+        var gameTask = game.Run(cancellationTokenSource.Token);
+        var displayTask = displayController.RunDisplayLoop(cancellationTokenSource.Token);
 
         await gameTask;
         await displayTask;
     }
 
-    static private void StartNewGame()
-    {
-
-    }
-
-    static private void QuitGame()
-    {
-        Environment.Exit(0);
-    }
 }

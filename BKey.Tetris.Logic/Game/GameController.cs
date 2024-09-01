@@ -1,6 +1,8 @@
 ﻿using BKey.Tetris.Logic.Board;
+using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Input;
 using BKey.Tetris.Logic.Tetrimino;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Logic.Game;
@@ -8,7 +10,7 @@ public class GameController : IGameController
 {
     private BoardBuffer BoardBuffer { get; }
     private ITetriminoFactory TetriminoFactory { get; }
-    private IInputQueue<MovementRequest> MovementQueue { get; }
+    private IEventQueue<MovementRequestEvent> MovementQueue { get; }
     private IGameScore Score { get; }
 
     private GameState CurrentState { get; set; }
@@ -19,10 +21,12 @@ public class GameController : IGameController
     private const int Down = 1;
     private const int None = 0;
 
+    private bool disposedValue;
+
     public GameController(
         BoardBuffer boardBuffer,
         ITetriminoFactory tetriminoFactory,
-        IInputQueue<MovementRequest> inputQueue,
+        IEventQueue<MovementRequestEvent> inputQueue,
         IGameScore score)
     {
         BoardBuffer = boardBuffer;
@@ -32,15 +36,12 @@ public class GameController : IGameController
         Score = score;
     }
 
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken)
     {
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             switch (CurrentState)
             {
-                case GameState.Input:
-                    HandleInput();
-                    break;
                 case GameState.Movement:
                     HandleMovement();
                     break;
@@ -56,24 +57,12 @@ public class GameController : IGameController
                 case GameState.Render:
                     Render();
                     break;
+                case GameState.GameOver:
+                    break;
             }
 
             await Task.Delay(10);
         }
-    }
-
-    private void HandleInput()
-    {
-        // Capture user input (e.g., left, right, rotate, drop)
-        // For example, let's assume we're moving to the Rotation state after input
-        // This would need to be expanded based on actual input handling
-
-        if (MovementQueue.IsEmpty)
-        {
-            return;
-        }
-
-        CurrentState = GameState.Movement;
     }
 
     private void HandleMovement()
@@ -82,7 +71,15 @@ public class GameController : IGameController
         // If movement is complete, move to the commit state
 
         var board = BoardBuffer.GetWriteBoard();
-        var movement = MovementQueue.Dequeue();
+
+        var movements = MovementQueue.DequeueAll();
+        if (movements.Length == 0)
+        {
+            return;
+        }
+        // Take only the most recent movement to simplify.
+        // This could be expanded upon in the future.
+        var movement = movements[movements.Length - 1].Request;
 
         if (movement == MovementRequest.Rotate)
         {
@@ -142,7 +139,10 @@ public class GameController : IGameController
         {
             // Spawn a new Tetrimino and place it on the board
             board.AddTetrmino(TetriminoFactory.Next());
-
+            if (!board.CanMove(None, None)) {
+                CurrentState = GameState.GameOver;
+                return;
+            }
         }
 
         // Move to the render state
@@ -155,6 +155,29 @@ public class GameController : IGameController
         BoardBuffer.SwapBuffers();
 
         // Move back to the input state after rendering
-        CurrentState = GameState.Input;
+        CurrentState = GameState.Movement;
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // dispose managed state (managed objects)
+                MovementQueue.Dispose();
+            }
+
+            // free unmanaged resources (unmanaged objects) and override finalizer
+            // set large fields to null
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        System.GC.SuppressFinalize(this);
     }
 }

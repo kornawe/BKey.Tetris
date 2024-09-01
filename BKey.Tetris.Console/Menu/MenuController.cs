@@ -1,61 +1,108 @@
 ﻿using BKey.Tetris.Console.Input;
-using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Events;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BKey.Tetris.Console.Menu;
-internal class MenuController : IDisposable
+public class MenuController : IDisposable
 {
 
-    private MenuList MenuList { get; }
-    private IInputQueue<MenuRequest> MenuInput { get; }
+    private CancellationToken CancellationToken { get; }
+
+    private Stack<IMenuItem> MenuStack { get; }
+    private MenuRequestKeyAdapter RequestKeyAdapter { get; }
+
+    private IEventQueue<MenuRequestEvent> MenuRequestEventQueue { get; }
+    private bool IsDirty { get; set; }
     private bool disposedValue;
 
-    static Dictionary<ConsoleKey, MenuRequest> MenuKeyMappings = new Dictionary<ConsoleKey, MenuRequest>
-        {
-            { ConsoleKey.UpArrow, MenuRequest.Up},
-            { ConsoleKey.DownArrow, MenuRequest.Down },
-            { ConsoleKey.Enter, MenuRequest.Select },
-            { ConsoleKey.Escape, MenuRequest.Back }
-        };
-
-    public MenuController(MenuList menuList) : this(menuList, new ConsoleInputQueue<MenuRequest>(MenuKeyMappings))
+    public MenuController(
+        IEventBus eventBus,
+        IKeyBindingProvider keyBindingProvider,
+        CancellationToken cancellationToken)
     {
+        MenuStack = new Stack<IMenuItem>();
+        CancellationToken = cancellationToken;
+        RequestKeyAdapter = new MenuRequestKeyAdapter(eventBus, keyBindingProvider.GetBinding<MenuRequestType>());
+        MenuRequestEventQueue = new EventQueue<MenuRequestEvent>(eventBus);
+
+        // Mark dirty so the first pass causes a redraw.
+        IsDirty = true;
     }
 
-    public MenuController(MenuList menuList, IInputQueue<MenuRequest> menuInput)
+    public void Push(IMenuItem menuItem)
     {
-        MenuList = menuList;
-        MenuInput = menuInput;
+        MenuStack.Push(menuItem);
+        IsDirty = true;
     }
 
     public async Task Run()
     {
-        var keepErGoin = true;
-        while (keepErGoin)
+        if (MenuStack.Count == 0)
         {
-            MenuList.Display();
+            return;
+        }
 
-            switch (MenuInput.Dequeue())
+        while (!CancellationToken.IsCancellationRequested)
+        {
+            if (IsDirty && MenuStack.Count > 0)
             {
-                case MenuRequest.Up:
-                    MenuList.Up();
-                    break;
-                case MenuRequest.Down:
-                    MenuList.Down();
-                    break;
-                case MenuRequest.Select:
-                    keepErGoin = false;
-                    MenuList.Select();
-                    break;
+                await MenuStack.Peek().Display(true);
+                IsDirty = false;
             }
 
-            await Task.Delay(50);
+            var requests = MenuRequestEventQueue.DequeueAll();
+            if (requests.Length == 0)
+            {
+                await Task.Delay(50);
+                continue;
+            }
+
+            var request = requests[requests.Length - 1];
+
+            var menuRequest = await ForwardRequest(request);
+            if (!menuRequest.Handled)
+            {
+                switch (request.RequestType)
+                {
+                    case MenuRequestType.Back:
+                        await Back();
+                        break;
+                }
+            }
+
         }
-        MenuInput.Dispose();
+        MenuRequestEventQueue.Dispose();
+    }
+
+    private async Task<MenuRequestEvent> ForwardRequest(MenuRequestEvent request)
+    {
+
+        if (MenuStack.Count == 0)
+        {
+            return request;
+        }
+        var menuItem = MenuStack.Peek();
+        await menuItem.HandleInput(request);
+        if (request.Handled)
+        {
+            IsDirty = true;
+        }
+        return request;
+    }
+
+    public Task Back()
+    {
+        if (MenuStack.Count <= 1)
+        {
+            return Task.CompletedTask;
+        }
+        var lastMenuItem = MenuStack.Pop();
+        lastMenuItem.Dispose();
+        IsDirty = true;
+        return Task.CompletedTask;
     }
 
     protected virtual void Dispose(bool disposing)
@@ -65,7 +112,8 @@ internal class MenuController : IDisposable
             if (disposing)
             {
                 // dispose managed state (managed objects)
-                MenuInput.Dispose();
+                MenuRequestEventQueue.Dispose();
+                RequestKeyAdapter.Dispose();
             }
 
             // free unmanaged resources (unmanaged objects) and override finalizer

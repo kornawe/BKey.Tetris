@@ -1,0 +1,15 @@
+{
+  "Menu": {
+    "Up": ["UpArrow"],
+    "Down": ["DownArrow"],
+    "Select": ["Enter", "RightArrow"],
+    "Back": ["Escape", "LeftArrow"]
+  },
+  "Movement": {
+    "Left": ["LeftArrow"],
+    "Right": ["RightArrow"],
+    "Rotate": ["UpArrow"],
+    "Down": ["DownArrow"],
+    "Pause": ["Escape"]
+  }
+}
