@@ -29,19 +29,19 @@ Project supports both Windows and Linux
 2. `dotnet run --project BKey.Tetris.Console`
 
 # Upcoming work
-- Loss detection
-  - Fix locking in BoardBuffer
+- End Game Handling
+- Pause Menu
+- Text input in menus
+- Fix locking in BoardBuffer
 - Logging
-- New game configuration
 - Automatic Piece falling
 - Next piece queue
-- Smooth animation
 - Colored pieces once placed
-- Pause menu
 - Sound (Maybe)
-  - Event Bus?
 - Adjustable keybinding
+- Controller support
 - App versioning
+  - Change log
 - Unit Tests
 - CI/CD
 - Game saving and loading
