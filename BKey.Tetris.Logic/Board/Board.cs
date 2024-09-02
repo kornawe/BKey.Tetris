@@ -1,4 +1,5 @@
-﻿using BKey.Tetris.Logic.Tetrimino;
+﻿using BKey.Tetris.Logic.Movement;
+using BKey.Tetris.Logic.Tetrimino;
 
 namespace BKey.Tetris.Logic.Board;
 public class Board : IBoard, IReadonlyBoard
@@ -23,7 +24,7 @@ public class Board : IBoard, IReadonlyBoard
         Height = other.Height;
         Cells = new bool[Height, Width];
         // TODO make better
-        for(var i = 0; i < Height; i++)
+        for (var i = 0; i < Height; i++)
         {
             for (var j = 0; j < Width; j++)
             {
@@ -74,6 +75,11 @@ public class Board : IBoard, IReadonlyBoard
         return CanMove(CurrentTetrimino, deltaX, deltaY);
     }
 
+    public bool CanMove(IntVector2 vector2)
+    {
+        return CanMove(vector2.X, vector2.Y);
+    }
+
     internal bool CanRotate(TetriminoPiece tetrimino)
     {
         int[,] rotatedShape = RotateShape(tetrimino.Shape);
@@ -112,6 +118,11 @@ public class Board : IBoard, IReadonlyBoard
             tetrimino.X += deltaX;
             tetrimino.Y += deltaY;
         }
+    }
+
+    public void MoveTetrimino(IntVector2 vector2)
+    {
+        MoveTetrimino(vector2.X, vector2.Y);
     }
 
     public void MoveTetrimino(int deltaX, int deltaY)

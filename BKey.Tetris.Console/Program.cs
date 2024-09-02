@@ -5,6 +5,7 @@ using BKey.Tetris.Logic.Board;
 using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Movement;
 using BKey.Tetris.Logic.Settings;
 using BKey.Tetris.Logic.Tetrimino;
 using System;
@@ -65,6 +66,9 @@ internal class Program
             new MenuItemInputInt(
                 "Height",
                 new SettingProvider<BoardCreateOptions, int>(settings.BoardCreateOptions, s => s.Height)),
+                new MenuItemInputInt(
+                "Speed",
+                new SettingProvider<NewGameSettings, int>(settings, s => s.Speed)),
             new MenuItemInputInt(
                 "Seed",
                 new SettingProvider<NewGameSettings, int>(settings, s => s.Seed)),
@@ -85,7 +89,8 @@ internal class Program
         ITetriminoFactory factory = new TetriminoFactory(random);
         using var movementKeyAdapter = new MovementRequestKeyAdapter(EventBus);
         using var inputQueue = new EventQueue<MovementRequestEvent>(EventBus);
-        var game = new GameController(boardBuffer, factory, inputQueue, score);
+        var movementSourceFall = new MovementSourceConstantVelocity(new Vector2(0, newGameSettings.Speed / 10f));
+        var game = new GameController(boardBuffer, factory, inputQueue, score, movementSourceFall);
         var displayController = new DisplayController(display);
 
         var cancellationTokenSource = new CancellationTokenSource();

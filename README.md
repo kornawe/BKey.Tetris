@@ -34,7 +34,6 @@ Project supports both Windows and Linux
 - Text input in menus
 - Fix locking in BoardBuffer
 - Logging
-- Automatic Piece falling
 - Next piece queue
 - Colored pieces once placed
 - Sound (Maybe)
