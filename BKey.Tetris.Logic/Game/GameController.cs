@@ -1,7 +1,9 @@
 ﻿using BKey.Tetris.Logic.Board;
 using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Input;
+using BKey.Tetris.Logic.Movement;
 using BKey.Tetris.Logic.Tetrimino;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,14 +14,15 @@ public class GameController : IGameController
     private ITetriminoFactory TetriminoFactory { get; }
     private IEventQueue<MovementRequestEvent> MovementQueue { get; }
     private IGameScore Score { get; }
+    private MovementAggregator MovementAggregator { get; }
+    private Stopwatch LoopStopwatch { get; }
 
     private GameState CurrentState { get; set; }
 
-    private const int Left = -1;
-    private const int Right = 1;
-    private const int Up = -1;
-    private const int Down = 1;
-    private const int None = 0;
+    private static readonly IntVector2 Left = new IntVector2(-1, 0);
+    private static readonly IntVector2 Right = new IntVector2(1, 0);
+    private static readonly IntVector2 Down = new IntVector2(0, 1);
+    private static readonly IntVector2 None = IntVector2.Origin;
 
     private bool disposedValue;
 
@@ -27,17 +30,23 @@ public class GameController : IGameController
         BoardBuffer boardBuffer,
         ITetriminoFactory tetriminoFactory,
         IEventQueue<MovementRequestEvent> inputQueue,
-        IGameScore score)
+        IGameScore score,
+        IMovementSource fallSource)
     {
         BoardBuffer = boardBuffer;
         TetriminoFactory = tetriminoFactory;
         MovementQueue = inputQueue;
         CurrentState = GameState.NewPieceSpawn;
         Score = score;
+        MovementAggregator = new MovementAggregator([
+            fallSource
+            ]);
+        LoopStopwatch = new Stopwatch();
     }
 
     public async Task Run(CancellationToken cancellationToken)
     {
+        LoopStopwatch.Restart();
         while (!cancellationToken.IsCancellationRequested)
         {
             switch (CurrentState)
@@ -73,34 +82,32 @@ public class GameController : IGameController
         var board = BoardBuffer.GetWriteBoard();
 
         var movements = MovementQueue.DequeueAll();
-        if (movements.Length == 0)
+        foreach (var move in movements)
         {
-            return;
-        }
-        // Take only the most recent movement to simplify.
-        // This could be expanded upon in the future.
-        var movement = movements[movements.Length - 1].Request;
+            switch (move.Request)
+            {
+                case MovementRequest.Rotate:
+                    board.RotateTetrimino();
+                    break;
+                case MovementRequest.Left:
+                    board.MoveTetrimino(Left);
+                    break;
+                case MovementRequest.Right:
+                    board.MoveTetrimino(Right);
+                    break;
+                case MovementRequest.Down:
+                    board.MoveTetrimino(Down);
+                    break;
+                default:
+                    continue;
+            }
 
-        if (movement == MovementRequest.Rotate)
-        {
-            board.RotateTetrimino();
-        }
 
-        if (movement == MovementRequest.Left)
-        {
-            board.MoveTetrimino(Left, None);
         }
+        var automatedMovement = MovementAggregator.Update(LoopStopwatch.Elapsed);
+        board.MoveTetrimino(automatedMovement);
 
-        if (movement == MovementRequest.Right)
-        {
-            board.MoveTetrimino(Right, None);
-        }
-
-        if (movement == MovementRequest.Down)
-        {
-            board.MoveTetrimino(None, Down);
-        }
-
+        LoopStopwatch.Restart();
         CurrentState = GameState.Commit;
     }
 
@@ -109,7 +116,7 @@ public class GameController : IGameController
         // Add the Tetrimino to the board and check if it is placed
         // If placed, move to the line clear state
         var board = BoardBuffer.GetWriteBoard();
-        if (!board.CanMove(None, Down))
+        if (!board.CanMove(Down))
         {
             board.PlaceTetrimino();
             Score.AddPiecePlaced();
@@ -139,7 +146,8 @@ public class GameController : IGameController
         {
             // Spawn a new Tetrimino and place it on the board
             board.AddTetrmino(TetriminoFactory.Next());
-            if (!board.CanMove(None, None)) {
+            if (!board.CanMove(None))
+            {
                 CurrentState = GameState.GameOver;
                 return;
             }
