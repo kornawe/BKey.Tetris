@@ -17,7 +17,7 @@ public class DisplayController
         while (!cancellationToken.IsCancellationRequested)
         {
             display.Draw();
-            await Task.Delay(32);
+            await Task.Delay(32, cancellationToken);
         }
     }
 }
