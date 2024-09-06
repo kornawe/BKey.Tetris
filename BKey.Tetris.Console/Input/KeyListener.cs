@@ -10,15 +10,17 @@ public class KeyListener : IDisposable
 {
     private readonly HashSet<ConsoleKey> _pressedKeys;
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private IEventBus EventBus { get; }
     private bool disposedValue;
 
-    public KeyListener()
+    public KeyListener(IEventBus eventBus)
     {
+        EventBus = eventBus;
         _pressedKeys = new HashSet<ConsoleKey>();
         _cancellationTokenSource = new CancellationTokenSource();
     }
 
-    public KeyListener Attach(IEventBus eventBus)
+    public KeyListener Attach()
     {
         Task.Run(async () =>
         {
@@ -35,7 +37,7 @@ public class KeyListener : IDisposable
                 if (!_pressedKeys.Contains(keyInfo.Key))
                 {
                     _pressedKeys.Add(keyInfo.Key);
-                    eventBus.Publish(new KeyPressEvent(keyInfo));
+                    EventBus.Publish(new KeyPressEvent(keyInfo));
                 }
 
                 // Handle KeyUp event

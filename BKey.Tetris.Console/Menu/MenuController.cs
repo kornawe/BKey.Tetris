@@ -9,8 +9,6 @@ namespace BKey.Tetris.Console.Menu;
 public class MenuController : IDisposable
 {
 
-    private CancellationToken CancellationToken { get; }
-
     private Stack<IMenuItem> MenuStack { get; }
     private MenuRequestKeyAdapter RequestKeyAdapter { get; }
 
@@ -20,11 +18,9 @@ public class MenuController : IDisposable
 
     public MenuController(
         IEventBus eventBus,
-        IKeyBindingProvider keyBindingProvider,
-        CancellationToken cancellationToken)
+        IKeyBindingProvider keyBindingProvider)
     {
         MenuStack = new Stack<IMenuItem>();
-        CancellationToken = cancellationToken;
         RequestKeyAdapter = new MenuRequestKeyAdapter(eventBus, keyBindingProvider.GetBinding<MenuRequestType>());
         MenuRequestEventQueue = new EventQueue<MenuRequestEvent>(eventBus);
 
@@ -38,14 +34,14 @@ public class MenuController : IDisposable
         IsDirty = true;
     }
 
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken)
     {
         if (MenuStack.Count == 0)
         {
             return;
         }
 
-        while (!CancellationToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             if (IsDirty && MenuStack.Count > 0)
             {

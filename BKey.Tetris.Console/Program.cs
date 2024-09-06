@@ -1,13 +1,11 @@
 ﻿using BKey.Tetris.Console.Input;
 using BKey.Tetris.Console.Menu;
-using BKey.Tetris.Logic;
+using BKey.Tetris.Console.Setup;
 using BKey.Tetris.Logic.Board;
-using BKey.Tetris.Logic.Events;
 using BKey.Tetris.Logic.Game;
 using BKey.Tetris.Logic.Input;
-using BKey.Tetris.Logic.Movement;
 using BKey.Tetris.Logic.Settings;
-using BKey.Tetris.Logic.Tetrimino;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,36 +23,42 @@ internal class Program
             { ConsoleKey.DownArrow, MovementRequest.Down }
         };
 
-    private static IEventBus EventBus { get; }
+    private static IServiceProvider ServiceProvider { get; }
 
     static Program()
     {
-        EventBus = new SimpleEventBus();
+        IServiceCollection services = new ServiceCollection();
+
+        services.AddTetrisConsole();
+
+        ServiceProvider = services.BuildServiceProvider();
     }
 
     static async Task Main(string[] args)
     {
-        using var keyListener = new KeyListener().Attach(EventBus);
+        using var userScope = ServiceProvider.CreateScope();
+        var keyListener = userScope.ServiceProvider.GetRequiredService<KeyListener>();
+        keyListener.Attach();
 
         var version = System.Reflection.Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString(3) ?? string.Empty;
         var menuCancellationSource = new CancellationTokenSource();
         var keyBindingProvider = new KeyBindingProvider();
-        var mainMenuController = new MenuController(EventBus, keyBindingProvider, menuCancellationSource.Token);
+        var mainMenuController = userScope.ServiceProvider.GetRequiredService<MenuController>();
 
         var mainMenu = new MenuItemList([
             new MenuItemText("Da Shape Game"),
             new MenuItemText(version),
             new MenuItemAction("New Game", async () => {
-                    await CreateStartGameMenu(mainMenuController, menuCancellationSource);
+                    await CreateStartGameMenu(userScope.ServiceProvider, mainMenuController);
                 }),
             new MenuItemAction("Quit", menuCancellationSource.CancelAsync),
         ]);
 
         mainMenuController.Push(mainMenu);
-        await mainMenuController.Run();
+        await mainMenuController.Run(menuCancellationSource.Token);
     }
 
-    static Task CreateStartGameMenu(MenuController menuController, CancellationTokenSource cancellationTokenSource)
+    static Task CreateStartGameMenu(IServiceProvider serviceProvider, MenuController menuController)
     {
         var settings = new NewGameSettings();
 
@@ -72,34 +76,16 @@ internal class Program
             new MenuItemInputInt(
                 "Seed",
                 new SettingProvider<NewGameSettings, int>(settings, s => s.Seed)),
-            new MenuItemAction("Start", async () => { await StartGame(settings); }),
+            new MenuItemAction("Start", async () => { await StartGame(serviceProvider, settings); }),
             new MenuItemBack(menuController),
         ]));
         return Task.CompletedTask;
     }
 
-    static async Task StartGame(NewGameSettings newGameSettings)
+    public static async Task StartGame(IServiceProvider serviceProvider, NewGameSettings gameSettings)
     {
-        var random = new Random(newGameSettings.Seed);
-        var boardFactory = new BoardFactory();
-        var board = boardFactory.Create(newGameSettings.BoardCreateOptions);
-        var score = new GameScore();
-        var boardBuffer = new BoardBuffer(board);
-        IGameDisplay display = new ConsoleDisplay(boardBuffer, score);
-        ITetriminoFactory factory = new TetriminoFactory(random);
-        using var movementKeyAdapter = new MovementRequestKeyAdapter(EventBus);
-        using var inputQueue = new EventQueue<MovementRequestEvent>(EventBus);
-        var movementSourceFall = new MovementSourceConstantVelocity(new Vector2(0, newGameSettings.Speed / 10f));
-        var game = new GameController(boardBuffer, factory, inputQueue, score, movementSourceFall);
-        var displayController = new DisplayController(display);
-
-        var cancellationTokenSource = new CancellationTokenSource();
-
-        var gameTask = game.Run(cancellationTokenSource.Token);
-        var displayTask = displayController.RunDisplayLoop(cancellationTokenSource.Token);
-
-        await gameTask;
-        await displayTask;
+        var game = serviceProvider.GetRequiredService<Game>();
+        await game.Run(gameSettings);
     }
 
 }
